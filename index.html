@@ -43,19 +43,19 @@
         }
         .slot-active { background-color: #fef3c7 !important; border-color: #f59e0b !important; }
 
-        /* 遊戲下落音符 */
+        /* 遊戲下落音符 (已放大音符符號以利學生辨識) */
         .falling-note {
             position: absolute;
             width: 76%;
             left: 12%;
-            height: 52px;
+            height: 56px;
             border-radius: 14px;
             border-bottom-width: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.8rem;
+            font-size: 2.5rem;
             z-index: 10;
             transition: opacity 0.2s ease, transform 0.08s linear;
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
@@ -811,14 +811,14 @@
                 const targetTime = startTime + (i * BEAT_DURATION);
                 
                 if (state.type === 'quarter') {
-                    notes.push({ id: id++, targetTime, isRest: false, label: 'Ta', class: 'note-quarter border-sky-600', hit: false, missed: false, el: null });
+                    notes.push({ id: id++, targetTime, isRest: false, label: noteData['quarter'].symbol, class: 'note-quarter border-sky-600', hit: false, missed: false, el: null });
                 } else if (state.type === 'half') {
-                    notes.push({ id: id++, targetTime, isRest: false, label: 'Ta-a', class: 'note-half border-emerald-700', hit: false, missed: false, el: null });
+                    notes.push({ id: id++, targetTime, isRest: false, label: noteData['half'].symbol, class: 'note-half border-emerald-700', hit: false, missed: false, el: null });
                 } else if (state.type === 'eighth') {
-                    notes.push({ id: id++, targetTime, isRest: false, label: 'Ti', class: 'note-eighth border-rose-700', hit: false, missed: false, el: null });
-                    notes.push({ id: id++, targetTime: targetTime + (BEAT_DURATION / 2), isRest: false, label: 'Ti', class: 'note-eighth border-rose-700', hit: false, missed: false, el: null });
+                    notes.push({ id: id++, targetTime, isRest: false, label: noteData['eighth'].symbol, class: 'note-eighth border-rose-700', hit: false, missed: false, el: null });
+                    notes.push({ id: id++, targetTime: targetTime + (BEAT_DURATION / 2), isRest: false, label: noteData['eighth'].symbol, class: 'note-eighth border-rose-700', hit: false, missed: false, el: null });
                 } else if (state.type === 'rest') {
-                    notes.push({ id: id++, targetTime, isRest: true, label: 'Shh', class: 'note-rest border-slate-400 falling-rest', hit: false, missed: false, el: null });
+                    notes.push({ id: id++, targetTime, isRest: true, label: noteData['rest'].symbol, class: 'note-rest border-slate-400 falling-rest', hit: false, missed: false, el: null });
                 }
             }
             return notes;
@@ -917,7 +917,7 @@
                     }
                     
                     const progress = 1 - (timeDiff / FALL_DURATION);
-                    const y = (progress * hitLineY) - 26; 
+                    const y = (progress * hitLineY) - 28; 
                     note.el.style.transform = `translateY(${y}px)`;
                 }
             });
