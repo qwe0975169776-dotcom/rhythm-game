@@ -46,10 +46,10 @@
         /* 遊戲下落音符 */
         .falling-note {
             position: absolute;
-            width: 70%;
-            left: 15%;
-            height: 48px;
-            border-radius: 12px;
+            width: 76%;
+            left: 12%;
+            height: 52px;
+            border-radius: 14px;
             border-bottom-width: 4px;
             display: flex;
             align-items: center;
@@ -57,186 +57,229 @@
             font-weight: bold;
             font-size: 1.8rem;
             z-index: 10;
-            transition: opacity 0.2s ease, transform 0.1s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: opacity 0.2s ease, transform 0.08s linear;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            pointer-events: none;
         }
         .falling-rest {
-            opacity: 0.8;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
+            opacity: 0.85;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.12) 10px, rgba(0,0,0,0.12) 20px);
         }
 
         @keyframes floatUpFade {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+            0% { transform: translateY(0) scale(0.6); opacity: 0; }
+            20% { transform: translateY(-16px) scale(1.15); opacity: 1; }
+            100% { transform: translateY(-55px) scale(1); opacity: 0; }
         }
         .hit-feedback {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             font-weight: 900;
-            font-size: 3rem;
+            font-size: 2.8rem;
             pointer-events: none;
             z-index: 50;
             text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            animation: floatUpFade 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: floatUpFade 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
         .feedback-perfect { color: #facc15; }
         .feedback-good { color: #4ade80; }
         .feedback-miss { color: #f87171; }
-        .feedback-penalty { color: #ef4444; font-size: 3.5rem; text-shadow: 0 0 20px #ef4444; }
+        .feedback-penalty { color: #ef4444; font-size: 3.2rem; text-shadow: 0 0 20px #ef4444; }
 
         @keyframes shakeAndFlash {
-            0% { transform: translate(1px, 1px) rotate(0deg); background-color: rgba(239, 68, 68, 0.3); }
-            10% { transform: translate(-2px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); background-color: rgba(239, 68, 68, 0.5); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); background-color: transparent; }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            0% { transform: translate(1px, 1px) rotate(0deg); background-color: rgba(239, 68, 68, 0.35); }
+            15% { transform: translate(-3px, -2px) rotate(-1deg); }
+            30% { transform: translate(-3px, 2px) rotate(1deg); background-color: rgba(239, 68, 68, 0.5); }
+            50% { transform: translate(2px, -1px) rotate(0deg); background-color: transparent; }
             70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            100% { transform: translate(0, 0); }
         }
         .error-shake {
-            animation: shakeAndFlash 0.4s;
+            animation: shakeAndFlash 0.35s;
         }
         .track-hit-flash {
-            background: linear-gradient(to top, rgba(250, 204, 21, 0.5), transparent) !important;
+            background: linear-gradient(to top, rgba(250, 204, 21, 0.4), transparent) !important;
+        }
+
+        /* 觸發波紋動畫 */
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 0.9; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        .hit-ripple {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 9999px;
+            background: rgba(250, 204, 21, 0.3);
+            pointer-events: none;
+            animation: ripple 0.3s ease-out forwards;
         }
     </style>
 </head>
 <body class="w-screen h-screen flex flex-col bg-pattern relative">
 
+    <!-- Toast Notification (取代 alert) -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[110] bg-rose-500 text-white font-bold px-6 py-3 rounded-2xl shadow-xl transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none flex items-center gap-2">
+        <span class="text-xl">⚠️</span>
+        <span id="toast-msg">請填入拍點卡片！</span>
+    </div>
+
+    <!-- 主選單畫面 -->
     <div id="home-view" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-4 z-10 bg-pattern transition-opacity duration-300">
-        <header class="text-center mb-10">
-            <h1 class="text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-4">✨ 動感節拍組合器 ✨</h1>
-            <p class="text-lg md:text-2xl text-sky-700 font-semibold bg-white/80 px-6 py-2 rounded-full shadow-sm inline-block">
-                選擇遊玩模式，考驗你的節奏感！
+        <header class="text-center mb-8">
+            <h1 class="text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-3">✨ 動感節拍組合器 ✨</h1>
+            <p class="text-base md:text-xl text-sky-700 font-semibold bg-white/90 px-6 py-2 rounded-full shadow-sm inline-block">
+                🎵 聽旋律、抓準拍點！支援手機觸控與滑鼠打擊
             </p>
         </header>
 
-        <div class="flex flex-col gap-6 w-full max-w-sm mb-8">
-            <button id="btn-mode-editor" class="card-shadow bg-blue-500 hover:bg-blue-400 text-white font-bold text-3xl py-6 px-4 rounded-3xl border-b-8 border-blue-700 flex flex-col items-center">
-                <span>✏️ 自訂節奏</span>
-                <span class="text-sm md:text-base text-blue-200 mt-1 opacity-80">(排版 16 格小節)</span>
+        <div class="flex flex-col gap-4 w-full max-w-sm mb-6">
+            <button id="btn-mode-editor" class="card-shadow bg-blue-500 hover:bg-blue-400 text-white font-bold text-2xl md:text-3xl py-5 px-4 rounded-3xl border-b-8 border-blue-700 flex flex-col items-center">
+                <span>✏️ 自訂節奏譜</span>
+                <span class="text-xs md:text-sm text-blue-200 mt-1 opacity-90">(創作 4 小節 16 拍樂曲)</span>
             </button>
-            <div class="h-1 w-full bg-slate-300 rounded-full my-2 relative">
-                <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-f8fafc px-3 text-slate-500 font-bold text-sm">OR</span>
+            <div class="h-1 w-full bg-slate-300 rounded-full my-1 relative">
+                <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-f8fafc px-3 text-slate-500 font-bold text-sm">或快速挑戰</span>
             </div>
-            <button class="diff-btn card-shadow bg-green-400 hover:bg-green-300 text-green-900 font-bold text-2xl py-4 px-4 rounded-2xl border-b-6 border-green-600 flex justify-between items-center" data-measures="6">
-                <span>🌱 簡單挑戰</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">6 小節</span>
+            <button class="diff-btn card-shadow bg-green-400 hover:bg-green-300 text-green-950 font-bold text-xl md:text-2xl py-3.5 px-4 rounded-2xl border-b-6 border-green-600 flex justify-between items-center" data-measures="6">
+                <span>🌱 初階模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">6 小節</span>
             </button>
-            <button class="diff-btn card-shadow bg-orange-400 hover:bg-orange-300 text-orange-900 font-bold text-2xl py-4 px-4 rounded-2xl border-b-6 border-orange-600 flex justify-between items-center" data-measures="12">
-                <span>🔥 中等挑戰</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">12 小節</span>
+            <button class="diff-btn card-shadow bg-orange-400 hover:bg-orange-300 text-orange-950 font-bold text-xl md:text-2xl py-3.5 px-4 rounded-2xl border-b-6 border-orange-600 flex justify-between items-center" data-measures="12">
+                <span>🔥 中階模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">12 小節</span>
             </button>
-            <button class="diff-btn card-shadow bg-purple-500 hover:bg-purple-400 text-white font-bold text-2xl py-4 px-4 rounded-2xl border-b-6 border-purple-700 flex justify-between items-center" data-measures="18">
-                <span>⚡ 困難挑戰</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">18 小節</span>
+            <button class="diff-btn card-shadow bg-purple-500 hover:bg-purple-400 text-white font-bold text-xl md:text-2xl py-3.5 px-4 rounded-2xl border-b-6 border-purple-700 flex justify-between items-center" data-measures="18">
+                <span>⚡ 高階模式</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">18 小節</span>
             </button>
         </div>
     </div>
 
+    <!-- 節奏編輯器畫面 -->
     <div id="editor-view" class="absolute inset-0 w-full h-full flex-col items-center p-4 overflow-y-auto hidden z-20 bg-pattern">
-        <header class="text-center mb-4 shrink-0 mt-2 flex justify-between items-center w-full max-w-4xl px-4">
-            <button id="btn-back-home" class="bg-white border-2 border-slate-300 text-slate-600 font-bold py-2 px-4 rounded-xl shadow-sm hover:bg-slate-100">
-                ◀ 返回
+        <header class="text-center mb-3 shrink-0 mt-1 flex justify-between items-center w-full max-w-4xl px-2">
+            <button id="btn-back-home" class="bg-white border-2 border-slate-300 text-slate-600 font-bold py-2 px-4 rounded-xl shadow-sm hover:bg-slate-100 flex items-center gap-1 active:scale-95 transition-transform">
+                ◀ 返回主頁
             </button>
-            <h1 class="text-2xl md:text-4xl font-bold text-sky-600 drop-shadow-sm">自訂節奏模式</h1>
-            <div class="w-16"></div> <!-- Spacer for centering -->
+            <h1 class="text-2xl md:text-3xl font-bold text-sky-600">自訂節奏模式</h1>
+            <div class="w-16"></div>
         </header>
 
         <!-- 工具列 -->
         <div class="flex flex-wrap gap-3 mb-4 shrink-0 justify-center">
-            <button id="btn-clear" class="card-shadow bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl border-2 border-gray-300">🗑️ 清空</button>
-            <button id="btn-random-editor" class="card-shadow bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 rounded-xl border-2 border-purple-300">🎲 隨機填滿</button>
-            <button id="btn-start-custom" class="card-shadow bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold text-xl py-2 px-8 rounded-xl border-b-4 border-green-700 animate-pulse">
-                🎮 開始挑戰！
+            <button id="btn-clear" class="card-shadow bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl border-2 border-gray-300">🗑️ 清空譜面</button>
+            <button id="btn-random-editor" class="card-shadow bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 rounded-xl border-2 border-purple-300">🎲 隨機產生</button>
+            <button id="btn-start-custom" class="card-shadow bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 text-white font-bold text-xl py-2 px-8 rounded-xl border-b-4 border-green-700 shadow-md">
+                🎮 開始演奏挑戰！
             </button>
         </div>
 
         <!-- 16格編排區 (4小節) -->
         <main class="w-full max-w-4xl bg-white p-4 rounded-3xl shadow-lg border-4 border-sky-100 shrink-0 mb-4" id="board">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 1 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m1"></div></div>
-                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 2 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m2"></div></div>
-                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 3 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m3"></div></div>
-                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 4 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m4"></div></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-sky-50 p-2.5 rounded-xl border-2 border-sky-100"><div class="text-sky-600 text-xs font-bold mb-1 px-1 flex justify-between"><span>第 1 小節 [C 和弦]</span><span class="text-sky-400">4 拍</span></div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m1"></div></div>
+                <div class="bg-sky-50 p-2.5 rounded-xl border-2 border-sky-100"><div class="text-sky-600 text-xs font-bold mb-1 px-1 flex justify-between"><span>第 2 小節 [G 和弦]</span><span class="text-sky-400">4 拍</span></div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m2"></div></div>
+                <div class="bg-sky-50 p-2.5 rounded-xl border-2 border-sky-100"><div class="text-sky-600 text-xs font-bold mb-1 px-1 flex justify-between"><span>第 3 小節 [Am 和弦]</span><span class="text-sky-400">4 拍</span></div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m3"></div></div>
+                <div class="bg-sky-50 p-2.5 rounded-xl border-2 border-sky-100"><div class="text-sky-600 text-xs font-bold mb-1 px-1 flex justify-between"><span>第 4 小節 [F 和弦]</span><span class="text-sky-400">4 拍</span></div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m4"></div></div>
             </div>
         </main>
 
         <!-- 卡片牌組 -->
-        <div class="w-full max-w-4xl bg-orange-50 p-4 rounded-3xl border-4 border-orange-200 shrink-0 mb-8">
+        <div class="w-full max-w-4xl bg-amber-50 p-3.5 rounded-3xl border-4 border-amber-200 shrink-0 mb-6">
+            <p class="text-xs md:text-sm text-amber-800 font-bold mb-2 text-center">👇 點選或拖曳音符卡片填入上方小節：</p>
             <div class="grid grid-cols-4 gap-2 md:gap-4 w-full" id="deck">
-                <div class="deck-card card-shadow note-quarter rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab" draggable="true" data-type="quarter">
-                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">♩</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ta (1拍)</div>
+                <div class="deck-card card-shadow note-quarter rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-pointer" draggable="true" data-type="quarter">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">♩</div>
+                    <div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ta (1拍)</div>
                 </div>
-                <div class="deck-card card-shadow note-eighth rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab" draggable="true" data-type="eighth">
-                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">♫</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ti-Ti (1拍)</div>
+                <div class="deck-card card-shadow note-eighth rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-pointer" draggable="true" data-type="eighth">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">♫</div>
+                    <div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ti-Ti (1拍)</div>
                 </div>
-                <div class="deck-card card-shadow note-rest rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab border-dashed" draggable="true" data-type="rest">
-                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">𝄽</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Shh (1拍)</div>
+                <div class="deck-card card-shadow note-rest rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-pointer border-dashed" draggable="true" data-type="rest">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">𝄽</div>
+                    <div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Shh (1拍休止)</div>
                 </div>
-                <div class="deck-card card-shadow note-half rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab" draggable="true" data-type="half">
-                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">𝅗𝅥</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ta-a (2拍)</div>
+                <div class="deck-card card-shadow note-half rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-pointer" draggable="true" data-type="half">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">𝅗𝅥</div>
+                    <div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ta-a (2拍長音)</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="game-view" class="absolute inset-0 w-full h-full flex-col bg-gray-900 z-30 hidden">
-        <div class="absolute top-0 w-full p-4 flex justify-between items-start z-40">
+    <!-- 遊戲進行畫面 -->
+    <div id="game-view" class="absolute inset-0 w-full h-full flex-col bg-gray-900 z-30 hidden overflow-hidden select-none">
+        <!-- 頂部計分板 -->
+        <div class="absolute top-0 w-full p-4 flex justify-between items-start z-40 pointer-events-none">
             <div class="text-white">
-                <div class="text-sm text-gray-400 font-bold tracking-widest">COMBO</div>
-                <div id="combo-display" class="text-5xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">0</div>
+                <div class="text-xs text-amber-400 font-bold tracking-widest uppercase">Combo</div>
+                <div id="combo-display" class="text-5xl font-black text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">0</div>
             </div>
             <div class="text-right">
-                <div class="text-sm text-gray-400 font-bold tracking-widest">SCORE</div>
+                <div class="text-xs text-sky-400 font-bold tracking-widest uppercase">Score</div>
                 <div id="score-display" class="text-4xl font-bold text-white drop-shadow-md">0</div>
             </div>
         </div>
 
-        <div id="game-track" class="w-full max-w-sm mx-auto h-full bg-gray-800 border-x-4 border-gray-700 relative overflow-hidden flex flex-col">
+        <!-- 下落軌道 (支援直接點擊/觸控判定) -->
+        <div id="game-track" class="w-full max-w-sm mx-auto h-full bg-gray-800/95 border-x-4 border-gray-700 relative overflow-hidden flex flex-col cursor-pointer active:brightness-110">
+            <!-- 倒數動畫層 -->
             <div id="game-count-in" class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-                <span id="game-count-text" class="text-[120px] font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] opacity-0 transition-opacity duration-100"></span>
+                <span id="game-count-text" class="text-[110px] font-black text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.9)] opacity-0 transition-all duration-100"></span>
             </div>
+
+            <!-- 音符下落層 -->
             <div id="notes-container" class="absolute inset-0 w-full h-full pointer-events-none"></div>
-            <!-- Hit Zone -->
-            <div class="absolute bottom-40 w-full h-20 border-y-2 border-white/40 bg-white/10 z-20 flex items-center justify-center" id="hit-zone">
-                <div class="w-full h-1.5 bg-yellow-400/80 absolute top-1/2 -translate-y-1/2 shadow-[0_0_15px_yellow]"></div>
+
+            <!-- 判定線區域 (Hit Zone) -->
+            <div class="absolute bottom-36 w-full h-20 border-y-2 border-amber-400/50 bg-amber-400/10 z-20 flex items-center justify-center pointer-events-none" id="hit-zone">
+                <div class="w-full h-1 bg-amber-400 shadow-[0_0_15px_#f59e0b]"></div>
+                <span class="absolute right-3 text-[11px] font-bold text-amber-300/70 tracking-widest uppercase">Target Line</span>
             </div>
-            <div id="feedback-container" class="absolute bottom-60 w-full h-32 z-30 pointer-events-none"></div>
+
+            <!-- 打擊反饋浮動層 -->
+            <div id="feedback-container" class="absolute bottom-56 w-full h-32 z-30 pointer-events-none"></div>
+
+            <div class="absolute bottom-28 w-full text-center text-xs text-gray-400 pointer-events-none font-medium">
+                👆 點擊軌道或下方大按鈕皆可打擊
+            </div>
         </div>
 
-        <div class="w-full max-w-sm mx-auto p-4 absolute bottom-0 left-1/2 -translate-x-1/2 z-40 bg-gray-900 pb-8">
-            <button id="btn-hit" class="w-full h-24 bg-gradient-to-b from-yellow-400 to-yellow-500 active:from-yellow-300 active:to-yellow-400 rounded-3xl border-b-8 border-yellow-700 text-4xl font-black text-yellow-900 shadow-[0_0_20px_rgba(234,179,8,0.4)] touch-none select-none transition-transform active:translate-y-2 active:border-b-0 mb-2">
-                HIT! <span class="block text-sm font-bold opacity-70 mt-1">(或按空白鍵)</span>
+        <!-- 底部大打擊按鈕 (統一滑鼠或觸控) -->
+        <div class="w-full max-w-sm mx-auto p-4 absolute bottom-0 left-1/2 -translate-x-1/2 z-40 bg-gradient-to-t from-gray-950 via-gray-900 to-transparent pb-6">
+            <button id="btn-hit" class="w-full h-24 relative overflow-hidden bg-gradient-to-b from-amber-400 to-amber-500 active:from-amber-300 active:to-amber-400 rounded-3xl border-b-8 border-amber-700 text-3xl font-black text-amber-950 shadow-[0_0_25px_rgba(245,158,11,0.5)] touch-none select-none transition-transform active:translate-y-2 active:border-b-2 flex flex-col items-center justify-center">
+                <span>HIT!</span>
+                <span class="text-xs font-bold text-amber-900/90 tracking-wide mt-0.5">👆 點擊或觸控打擊</span>
             </button>
         </div>
     </div>
 
+    <!-- 結算成績彈窗 (勝利畫面) -->
     <div id="result-modal" class="fixed inset-0 bg-black/85 z-[100] hidden flex-col items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center border-8 border-sky-400 shadow-[0_0_50px_rgba(56,189,248,0.5)] transform scale-90 transition-transform duration-300" id="result-box">
-            <h2 class="text-4xl font-black text-gray-800 mb-2">挑戰完成！</h2>
-            <p class="text-gray-500 font-bold mb-6" id="result-difficulty-text">模式</p>
+        <div class="bg-white rounded-[2.5rem] p-7 max-w-sm w-full text-center border-8 border-amber-400 shadow-[0_0_60px_rgba(251,191,36,0.6)] transform scale-90 transition-transform duration-300 relative overflow-hidden" id="result-box">
+            <div class="text-5xl mb-2 animate-bounce">🏆</div>
+            <h2 class="text-3xl font-black text-gray-800 mb-1">演奏挑戰完成！</h2>
+            <p class="text-gray-500 font-bold mb-4" id="result-difficulty-text">挑戰模式</p>
             
-            <div class="bg-sky-50 rounded-2xl p-4 mb-4 border-2 border-sky-100">
-                <div class="text-sm text-sky-600 font-bold tracking-widest mb-1">TOTAL SCORE</div>
-                <div class="text-6xl font-black text-sky-500 drop-shadow-sm" id="final-score">0</div>
+            <div class="bg-amber-50 rounded-2xl p-4 mb-3 border-2 border-amber-200">
+                <div class="text-xs text-amber-600 font-bold tracking-widest mb-1 uppercase">Total Score</div>
+                <div class="text-6xl font-black text-amber-500 drop-shadow-sm" id="final-score">0</div>
             </div>
             
-            <div class="flex justify-between bg-orange-50 rounded-2xl p-4 mb-8 border-2 border-orange-100">
-                <div class="text-left">
-                    <div class="text-sm text-orange-600 font-bold">Max Combo</div>
-                    <div class="text-3xl font-black text-orange-500" id="final-combo">0</div>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-sky-50 rounded-2xl p-3 border-2 border-sky-100 text-center">
+                    <div class="text-xs text-sky-600 font-bold">Max Combo</div>
+                    <div class="text-2xl font-black text-sky-500" id="final-combo">0</div>
                 </div>
-                <div class="text-right">
-                    <div class="text-sm text-green-600 font-bold">Perfects</div>
-                    <div class="text-3xl font-black text-green-500" id="final-perfects">0</div>
+                <div class="bg-emerald-50 rounded-2xl p-3 border-2 border-emerald-100 text-center">
+                    <div class="text-xs text-emerald-600 font-bold">Perfects</div>
+                    <div class="text-2xl font-black text-emerald-500" id="final-perfects">0</div>
                 </div>
             </div>
-            <button id="btn-play-again" class="w-full card-shadow bg-sky-500 hover:bg-sky-400 text-white font-bold text-2xl py-4 rounded-2xl border-b-6 border-sky-700 transition-colors">
+
+            <button id="btn-play-again" class="w-full card-shadow bg-sky-500 hover:bg-sky-400 text-white font-bold text-xl py-4 rounded-2xl border-b-6 border-sky-700 transition-colors">
                 🏠 回到主選單
             </button>
         </div>
@@ -250,7 +293,6 @@
             'half': { symbol: '𝅗𝅥', label: 'Ta-a', beats: 2, class: 'note-half border-emerald-700' }
         };
 
-        // UI Views
         const views = {
             home: document.getElementById('home-view'),
             editor: document.getElementById('editor-view'),
@@ -267,11 +309,20 @@
             views[viewName].classList.add('flex');
         }
 
-        // --- Editor State ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('opacity-0', '-translate-y-20', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-20', 'pointer-events-none');
+            }, 2200);
+        }
+
+        // --- 狀態變數 ---
         let slots = new Array(16).fill(null);
         let selectedNoteType = null;
-
-        // --- Game State ---
         let audioCtx = null;
         let gameNotes = [];
         let gameAnimationFrame;
@@ -280,90 +331,319 @@
         let score = 0, combo = 0, maxCombo = 0, perfectCount = 0;
         let currentModeText = "";
         
-        const BPM = 95; 
+        const BPM = 96; 
         const BEAT_DURATION = 60 / BPM; 
-        const FALL_DURATION = 1.8; 
+        const FALL_DURATION = 1.7; 
         
         // 判定時間閾值 (秒)
-        const TIME_PERFECT = 0.08;
+        const TIME_PERFECT = 0.085;
         const TIME_GOOD = 0.20;
-        // 防瞎按判定範圍 (超過這個時間距離，視為打空氣)
-        const TIME_MISS_LIMIT = 0.25;
+        const TIME_MISS_LIMIT = 0.26;
+
+        /* 防抖時間戳：防止 touchstart 與 mousedown 同時觸發雙重打擊 */
+        let lastHitTimestamp = 0;
 
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function playDing(time) {
+        /* 玩家正確命中時的清脆叮聲 */
+        function playHitDing(time) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.type = 'sine';
+            osc.type = 'triangle';
             osc.frequency.setValueAtTime(1046.50, time); // C6
-            osc.frequency.exponentialRampToValueAtTime(2093.00, time + 0.1); // C7
+            osc.frequency.exponentialRampToValueAtTime(2093.00, time + 0.08); // C7
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(0.6, time + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
-            osc.start(time); osc.stop(time + 0.3);
+            gain.gain.linearRampToValueAtTime(0.5, time + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+            osc.start(time); osc.stop(time + 0.25);
         }
 
+        /* 按錯/打空時的蜂鳴懲罰聲 */
         function playBuzzer(time) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(120, time);
-            osc.frequency.linearRampToValueAtTime(80, time + 0.3);
+            osc.frequency.setValueAtTime(140, time);
+            osc.frequency.linearRampToValueAtTime(70, time + 0.25);
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(0.8, time + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
-            osc.start(time); osc.stop(time + 0.5);
+            gain.gain.linearRampToValueAtTime(0.7, time + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
+            osc.start(time); osc.stop(time + 0.35);
         }
 
+        /* 預備拍節拍音 (Count-in) */
         function playMetronome(time, isAccent) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(isAccent ? 1200 : 800, time);
+            osc.frequency.setValueAtTime(isAccent ? 1300 : 850, time);
             gain.gain.setValueAtTime(0, time);
             gain.gain.linearRampToValueAtTime(0.4, time + 0.005);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-            osc.start(time); osc.stop(time + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+            osc.start(time); osc.stop(time + 0.09);
         }
 
+        /* 輕快底鼓 (Kick Drum) */
         function playKick(time) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(120, time);
-            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.4);
-            gain.gain.setValueAtTime(0.7, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
-            osc.start(time); osc.stop(time + 0.5);
+            osc.frequency.setValueAtTime(130, time);
+            osc.frequency.exponentialRampToValueAtTime(32, time + 0.28);
+            gain.gain.setValueAtTime(0.65, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+            osc.start(time); osc.stop(time + 0.32);
         }
 
+        /* 俐落軍鼓 (Snare Drum) */
         function playSnare(time) {
-            const bSize = audioCtx.sampleRate * 0.1; 
+            const bSize = audioCtx.sampleRate * 0.12; 
             const buffer = audioCtx.createBuffer(1, bSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
             const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-            const filter = audioCtx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 1200;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 900;
             const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0.3, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+            gain.gain.setValueAtTime(0.35, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
             noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
             noise.start(time);
         }
 
-        function scheduleBackingTrack(startTime, measures) {
+        /* 踩鈸/沙鈴 (Hi-Hat) - 休止符與反拍專用 */
+        function playHiHat(time, isOpen = false) {
+            const dur = isOpen ? 0.16 : 0.045;
+            const bSize = Math.floor(audioCtx.sampleRate * dur);
+            const buffer = audioCtx.createBuffer(1, bSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); 
+            filter.type = 'bandpass'; filter.frequency.value = 8500; filter.Q.value = 2.5;
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(isOpen ? 0.25 : 0.15, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            noise.start(time);
+        }
+
+        /* 低音貝斯音符 (Bassline) */
+        function playBass(time, freq, dur = 0.3) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, time);
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.4, time + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+            osc.start(time); osc.stop(time + dur + 0.05);
+        }
+
+        /* 
+           核心音樂設計：
+           依照 4 個小節循環的大調經典進行：
+           - 第 1 小節: C 大調 (根音 C3 130.81Hz，旋律音池 C4, E4, G4, C5)
+           - 第 2 小節: G 大調 (根音 G2 98.00Hz，旋律音池 B3, D4, G4, B4)
+           - 第 3 小節: Am 和弦 (根音 A2 110.00Hz，旋律音池 C4, E4, A4, C5)
+           - 第 4 小節: F 大調 (根音 F2 87.31Hz，旋律音池 A3, C4, F4, A4)
+        */
+        const CHORD_PROGRESSION = [
+            { root: 130.81, melodyTones: [261.63, 329.63, 392.00, 523.25] }, // C4, E4, G4, C5
+            { root: 98.00,  melodyTones: [246.94, 293.66, 392.00, 493.88] }, // B3, D4, G4, B4
+            { root: 110.00, melodyTones: [261.63, 329.63, 440.00, 523.25] }, // C4, E4, A4, C5
+            { root: 87.31,  melodyTones: [220.00, 261.63, 349.23, 440.00] }  // A3, C4, F4, A4
+        ];
+
+        /* 四分音符 (Ta) 旋律主奏：清脆飽滿的木琴/電鋼琴主旋律 (持續 1 拍) */
+        function playMelodyTa(time, freq) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, time);
+            
+            // 泛音層增加明亮木質感
+            const harmonic = audioCtx.createOscillator();
+            const hGain = audioCtx.createGain();
+            harmonic.connect(hGain); hGain.connect(gain);
+            harmonic.type = 'triangle';
+            harmonic.frequency.setValueAtTime(freq * 2, time);
+
+            const duration = BEAT_DURATION * 0.85;
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.35, time + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            hGain.gain.setValueAtTime(0.12, time);
+            hGain.gain.exponentialRampToValueAtTime(0.001, time + duration * 0.5);
+
+            osc.start(time); osc.stop(time + duration);
+            harmonic.start(time); harmonic.stop(time + duration);
+        }
+
+        /* 八分音符 (Ti-Ti) 旋律雙音：輕巧靈動的雙短音 (各半拍) */
+        function playMelodyTi(time, freq) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, time);
+
+            const duration = (BEAT_DURATION / 2) * 0.85;
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.32, time + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            osc.start(time); osc.stop(time + duration);
+        }
+
+        /* 二分音符 (Ta-a) 長音和弦：溫暖悠揚的合成器長音 (持續 2 拍) */
+        function playChordPad(time, freqs) {
+            const duration = (BEAT_DURATION * 2) * 0.95;
+            freqs.slice(0, 3).forEach((f, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = idx === 0 ? 'triangle' : 'sine';
+                osc.frequency.setValueAtTime(f, time);
+                
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(0.12, time + 0.08);
+                gain.gain.setValueAtTime(0.1, time + duration - 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+                osc.start(time); osc.stop(time + duration);
+            });
+        }
+
+        /* 
+           背景音樂總排程：
+           依據產生的拍點卡片陣列，同步編排鼓點、貝斯與對應卡片的音色旋律
+        */
+        function scheduleMusicWithRhythm(startTime, slotArray, measures) {
             const totalBeats = measures * 4;
-            for(let i=4; i>0; i--) playMetronome(startTime - (i * BEAT_DURATION), i === 4);
-            for(let i=0; i<totalBeats; i++) {
-                const t = startTime + (i * BEAT_DURATION);
-                if (i % 2 === 0) playKick(t); else playSnare(t);
+
+            // 1. 預備拍 (Count-in 4 拍節拍器)
+            for (let i = 4; i > 0; i--) {
+                const prepTime = startTime - (i * BEAT_DURATION);
+                playMetronome(prepTime, i === 4);
             }
+
+            // 2. 逐拍規劃節奏與拍點呼應樂音
+            for (let i = 0; i < totalBeats; i++) {
+                const t = startTime + (i * BEAT_DURATION);
+                const measureIndex = Math.floor(i / 4);
+                const beatInMeasure = i % 4;
+                const chord = CHORD_PROGRESSION[measureIndex % CHORD_PROGRESSION.length];
+                
+                // 底層鼓點：拍 1 & 3 踩大鼓，拍 2 & 4 打軍鼓
+                if (beatInMeasure === 0 || beatInMeasure === 2) {
+                    playKick(t);
+                    playBass(t, chord.root, BEAT_DURATION * 0.7);
+                } else {
+                    playSnare(t);
+                    playBass(t, chord.root * 1.5, BEAT_DURATION * 0.6); // 5 度低音
+                }
+
+                // 反拍細微踩鈸，讓律動更有彈性
+                playHiHat(t + (BEAT_DURATION / 2), false);
+
+                // 讀取當前拍點卡片
+                const state = slotArray[i];
+
+                if (!state || !state.main) {
+                    // 若是 tied (2拍音的後半) 則略過，聲音正在延續
+                    continue;
+                }
+
+                const tone = chord.melodyTones[beatInMeasure % chord.melodyTones.length];
+                const nextTone = chord.melodyTones[(beatInMeasure + 1) % chord.melodyTones.length];
+
+                if (state.type === 'quarter') {
+                    // 四分音符 (Ta)：清晰鳴奏 1 拍主旋律音
+                    playMelodyTa(t, tone);
+                } else if (state.type === 'eighth') {
+                    // 八分音符 (Ti-Ti)：前半拍與後半拍分別演奏靈動短音
+                    playMelodyTi(t, tone);
+                    playMelodyTi(t + (BEAT_DURATION / 2), nextTone);
+                } else if (state.type === 'half') {
+                    // 二分音符 (Ta-a)：演奏 2 拍的溫暖長音和弦
+                    playChordPad(t, chord.melodyTones);
+                } else if (state.type === 'rest') {
+                    // 休止符 (Shh)：主旋律靜音留白，改以清脆 open hi-hat 強調空拍的呼吸感！
+                    playHiHat(t, true);
+                }
+            }
+        }
+
+        /* 
+           遊戲結算專屬勝利配樂 (Victory Fanfare)
+           結算彈窗出現時自動演奏歡騰的大調琶音與閃耀尾音
+        */
+        function playVictoryFanfare() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            
+            // 凱旋三和弦琶音 (C5 -> E5 -> G5 -> C6)
+            const fanfareNotes = [
+                { f: 523.25, timeOffset: 0.00, dur: 0.16 }, // C5
+                { f: 659.25, timeOffset: 0.14, dur: 0.16 }, // E5
+                { f: 784.00, timeOffset: 0.28, dur: 0.16 }, // G5
+                { f: 1046.50, timeOffset: 0.42, dur: 0.35 } // C6
+            ];
+
+            fanfareNotes.forEach(n => {
+                const t = now + n.timeOffset;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(n.f, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.4, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + n.dur);
+                osc.start(t); osc.stop(t + n.dur + 0.05);
+            });
+
+            // 華麗燦爛的結尾大和弦 (C 大調主和弦齊鳴)
+            const chordStartTime = now + 0.75;
+            const chordTones = [523.25, 659.25, 784.00, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+            chordTones.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, chordStartTime);
+                
+                gain.gain.setValueAtTime(0, chordStartTime);
+                gain.gain.linearRampToValueAtTime(0.2, chordStartTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, chordStartTime + 1.2);
+
+                osc.start(chordStartTime); osc.stop(chordStartTime + 1.3);
+            });
+
+            // 閃爍星星音效 (Chimes / Sparkle)
+            const sparkleNotes = [1567.98, 1760.00, 2093.00, 2637.02];
+            sparkleNotes.forEach((freq, idx) => {
+                const sTime = chordStartTime + 0.15 + (idx * 0.09);
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, sTime);
+
+                gain.gain.setValueAtTime(0, sTime);
+                gain.gain.linearRampToValueAtTime(0.18, sTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, sTime + 0.35);
+
+                osc.start(sTime); osc.stop(sTime + 0.4);
+            });
         }
 
         function createSlotEl(index, span, type) {
@@ -375,7 +655,6 @@
             if (type) {
                 const nd = noteData[type];
                 div.classList.add('card-shadow', 'border-b-4');
-                // Ensure tailwind class list is merged
                 nd.class.split(' ').forEach(c => div.classList.add(c));
                 const size = span === 2 ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl';
                 div.innerHTML = `<div class="${size} font-bold pointer-events-none leading-none">${nd.symbol}</div>`;
@@ -420,9 +699,13 @@
             if (index < 0 || index >= 16) return;
             const beats = noteData[type].beats;
             if (beats === 2) {
-                if (index % 4 === 3 || index === 15) { // Cannot place 2-beat note at end of measure
+                if (index % 4 === 3 || index === 15) { // 2 拍卡片不能橫跨小節尾端
                     const slotEl = document.querySelector(`.slot[data-index="${index}"]`);
-                    if(slotEl) { slotEl.classList.add('bg-red-200'); setTimeout(() => slotEl.classList.remove('bg-red-200'), 300); }
+                    if(slotEl) { 
+                        slotEl.classList.add('bg-red-200'); 
+                        setTimeout(() => slotEl.classList.remove('bg-red-200'), 300); 
+                    }
+                    showToast('2 拍卡片無法放置在小節末尾！');
                     return;
                 }
                 clearSlotInfo(index); clearSlotInfo(index + 1);
@@ -435,7 +718,6 @@
             renderEditorBoard();
         }
 
-        // Editor Event Listeners
         document.getElementById('board').addEventListener('click', (e) => {
             const slot = e.target.closest('.slot');
             if (slot) {
@@ -453,19 +735,30 @@
                 if (selectedNoteType === card.dataset.type) selectedNoteType = null;
                 else { selectedNoteType = card.dataset.type; card.classList.add('deck-selected'); }
             });
-            card.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text', card.dataset.type); selectedNoteType = card.dataset.type; });
+            card.addEventListener('dragstart', (e) => { 
+                e.dataTransfer.setData('text', card.dataset.type); 
+                selectedNoteType = card.dataset.type; 
+            });
         });
 
         document.body.addEventListener('click', (e) => {
             if (!e.target.closest('.deck-card') && !e.target.closest('.slot')) {
-                selectedNoteType = null; deckCards.forEach(c => c.classList.remove('deck-selected'));
+                selectedNoteType = null; 
+                deckCards.forEach(c => c.classList.remove('deck-selected'));
             }
         });
 
-        const board = document.getElementById('board');
-        board.addEventListener('dragover', e => { e.preventDefault(); const s = e.target.closest('.slot'); if(s) s.classList.add('slot-active'); });
-        board.addEventListener('dragleave', e => { const s = e.target.closest('.slot'); if(s) s.classList.remove('slot-active'); });
-        board.addEventListener('drop', e => {
+        const boardEl = document.getElementById('board');
+        boardEl.addEventListener('dragover', e => { 
+            e.preventDefault(); 
+            const s = e.target.closest('.slot'); 
+            if(s) s.classList.add('slot-active'); 
+        });
+        boardEl.addEventListener('dragleave', e => { 
+            const s = e.target.closest('.slot'); 
+            if(s) s.classList.remove('slot-active'); 
+        });
+        boardEl.addEventListener('drop', e => {
             e.preventDefault();
             const s = e.target.closest('.slot');
             if(s) {
@@ -475,7 +768,10 @@
             }
         });
 
-        document.getElementById('btn-clear').addEventListener('click', () => { slots = new Array(16).fill(null); renderEditorBoard(); });
+        document.getElementById('btn-clear').addEventListener('click', () => { 
+            slots = new Array(16).fill(null); 
+            renderEditorBoard(); 
+        });
         
         function fillRandomSlots(measures) {
             let tempSlots = new Array(measures * 4).fill(null);
@@ -488,9 +784,13 @@
                         tempSlots[i] = { type: 'half', main: true };
                         tempSlots[i+1] = { type: 'tied', parent: i };
                         i += 2;
-                    } else { tempSlots[i] = { type: 'quarter', main: true }; i++; }
+                    } else { 
+                        tempSlots[i] = { type: 'quarter', main: true }; 
+                        i++; 
+                    }
                 } else {
-                    tempSlots[i] = { type: r, main: true }; i++;
+                    tempSlots[i] = { type: r, main: true }; 
+                    i++;
                 }
             }
             return tempSlots;
@@ -541,15 +841,23 @@
             let finalSlots = predefinedSlots;
             if (!finalSlots) finalSlots = fillRandomSlots(measures);
 
+            // 產生音符判定陣列
             gameNotes = parseSlotsToGameNotes(finalSlots, startTime);
-            scheduleBackingTrack(startTime, measures);
             
-            // Count-in Animation
+            // 排程背景音樂（伴奏深度呼應生成的拍點卡片）
+            scheduleMusicWithRhythm(startTime, finalSlots, measures);
+            
+            // 倒數 4 拍動畫
             const countText = document.getElementById('game-count-text');
-            for(let i=4; i>0; i--) {
+            for(let i = 4; i > 0; i--) {
                 setTimeout(() => {
-                    countText.textContent = i; countText.style.opacity = 1; countText.style.transform = 'scale(1.5)';
-                    setTimeout(() => { countText.style.transform = 'scale(1)'; countText.style.opacity = 0; }, 150);
+                    countText.textContent = i; 
+                    countText.style.opacity = '1'; 
+                    countText.style.transform = 'scale(1.4)';
+                    setTimeout(() => { 
+                        countText.style.transform = 'scale(1)'; 
+                        countText.style.opacity = '0'; 
+                    }, 180);
                 }, (startTime - audioCtx.currentTime - (i * BEAT_DURATION)) * 1000);
             }
 
@@ -585,10 +893,10 @@
                 
                 const timeDiff = note.targetTime - now;
                 
-                // Passed the hit zone entirely
+                // 超過判定線且未打擊
                 if (timeDiff < -TIME_GOOD) {
                     note.missed = true;
-                    if (!note.isRest) { // missed a normal note -> Reset Combo
+                    if (!note.isRest) { // 漏掉實體音符，重置 Combo
                         combo = 0; updateHUD();
                         showFeedback('Miss!', 'feedback-miss');
                     }
@@ -598,25 +906,25 @@
                 
                 allDone = false;
 
-                // Render logic
+                // 下落下軌渲染
                 if (timeDiff <= FALL_DURATION && timeDiff >= -1.0) {
                     if (!note.el) {
                         note.el = document.createElement('div');
                         note.el.className = `falling-note`;
-                        // add specific classes
                         note.class.split(' ').forEach(c => note.el.classList.add(c));
                         note.el.textContent = note.label;
                         container.appendChild(note.el);
                     }
                     
                     const progress = 1 - (timeDiff / FALL_DURATION);
-                    const y = (progress * hitLineY) - 24; 
+                    const y = (progress * hitLineY) - 26; 
                     note.el.style.transform = `translateY(${y}px)`;
                 }
             });
 
+            // 所有音符處理完畢，結束挑戰
             if (allDone && gameNotes.length > 0) {
-                setTimeout(endGame, 1500);
+                setTimeout(endGame, 1200);
                 isGameRunning = false;
                 return;
             }
@@ -631,9 +939,10 @@
             
             const gameViewContainer = document.getElementById('game-view');
             gameViewContainer.classList.add('error-shake');
-            setTimeout(() => gameViewContainer.classList.remove('error-shake'), 400);
+            setTimeout(() => gameViewContainer.classList.remove('error-shake'), 350);
         }
 
+        /* 核心打擊判定函數 */
         function triggerHit() {
             if (!isGameRunning) return;
             
@@ -641,64 +950,94 @@
             track.classList.add('track-hit-flash');
             setTimeout(() => track.classList.remove('track-hit-flash'), 100);
 
+            // 產生波紋動畫
+            const hitZone = document.getElementById('hit-zone');
+            const ripple = document.createElement('div');
+            ripple.className = 'hit-ripple';
+            hitZone.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 350);
+
             const now = audioCtx.currentTime;
             let closestNote = null;
             let minDiff = Infinity;
             
-            // Find absolute closest unhandled note
+            // 尋找時間差最近的音符
             gameNotes.forEach(note => {
                 if (note.hit || note.missed) return;
                 const absDiff = Math.abs(note.targetTime - now);
-                if (absDiff < minDiff) { minDiff = absDiff; closestNote = note; }
+                if (absDiff < minDiff) { 
+                    minDiff = absDiff; 
+                    closestNote = note; 
+                }
             });
 
-            // ANTI-SPAM LOGIC
+            // 防瞎按 / 空按懲罰
             if (!closestNote || minDiff > TIME_MISS_LIMIT) {
-                // Hitting empty air (no note nearby)
                 triggerPenalty();
                 return;
             }
 
-            // Note is in range, analyze it
+            // 休止符不能按下打擊
             if (closestNote.isRest) {
-                // Hit a rest note! Penalty!
                 closestNote.hit = true;
                 if (closestNote.el) closestNote.el.style.opacity = '0';
                 triggerPenalty();
             } else {
-                // Successful Hit!
+                // 正確命中
                 closestNote.hit = true; 
                 if (closestNote.el) {
-                    closestNote.el.style.transform += ' scale(1.5)';
+                    closestNote.el.style.transform += ' scale(1.4)';
                     closestNote.el.style.opacity = '0';
                 }
                 
-                playDing(now);
+                playHitDing(now);
                 combo++;
                 
                 if (minDiff <= TIME_PERFECT) {
-                    score += 200; perfectCount++; showFeedback('Perfect!', 'feedback-perfect');
+                    score += 200; 
+                    perfectCount++; 
+                    showFeedback('Perfect!', 'feedback-perfect');
                 } else {
-                    score += 100; showFeedback('Good!', 'feedback-good');
+                    score += 100; 
+                    showFeedback('Good!', 'feedback-good');
                 }
                 updateHUD();
             }
         }
 
-        const hitBtn = document.getElementById('btn-hit');
-        hitBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerHit(); }, {passive: false});
-        hitBtn.addEventListener('mousedown', (e) => { e.preventDefault(); triggerHit(); });
-        
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && isGameRunning) {
-                e.preventDefault();
-                hitBtn.classList.add('scale-95', 'brightness-90');
-                triggerHit();
+        /* 
+           統整純滑鼠與觸控打擊 (加入防抖避免 touchstart 與 mousedown 同時觸發)
+        */
+        function handleHitInput(e) {
+            if (!isGameRunning) return;
+            if (e) {
+                if (e.type === 'touchstart') {
+                    e.preventDefault(); // 阻擋合成的 mousedown
+                }
             }
-        });
-        window.addEventListener('keyup', (e) => {
-            if (e.code === 'Space') hitBtn.classList.remove('scale-95', 'brightness-90');
-        });
+            const currentMs = performance.now();
+            if (currentMs - lastHitTimestamp < 65) {
+                return; // 65ms 內重複觸發視為同一打擊
+            }
+            lastHitTimestamp = currentMs;
+            
+            // 點擊視覺反饋
+            const hitBtn = document.getElementById('btn-hit');
+            hitBtn.classList.add('scale-95');
+            setTimeout(() => hitBtn.classList.remove('scale-95'), 90);
+
+            triggerHit();
+        }
+
+        // 綁定大打擊按鈕
+        const hitBtn = document.getElementById('btn-hit');
+        hitBtn.addEventListener('touchstart', handleHitInput, { passive: false });
+        hitBtn.addEventListener('mousedown', handleHitInput);
+
+        // 綁定遊戲軌道判定區 (點擊軌道任何位置皆可打擊)
+        const gameTrack = document.getElementById('game-track');
+        gameTrack.addEventListener('touchstart', handleHitInput, { passive: false });
+        gameTrack.addEventListener('mousedown', handleHitInput);
 
         function endGame() {
             cancelAnimationFrame(gameAnimationFrame);
@@ -708,13 +1047,17 @@
             document.getElementById('final-perfects').textContent = perfectCount;
             
             switchView('result');
+            
+            // 播放勝利結算音樂
+            playVictoryFanfare();
+
             setTimeout(() => {
                 document.getElementById('result-box').classList.remove('scale-90');
                 document.getElementById('result-box').classList.add('scale-100');
-            }, 10);
+            }, 20);
         }
 
-        // Navigation Bindings
+        // 導航與按鈕事件
         document.getElementById('btn-mode-editor').addEventListener('click', () => switchView('editor'));
         document.getElementById('btn-back-home').addEventListener('click', () => switchView('home'));
         
@@ -727,12 +1070,11 @@
         });
 
         document.getElementById('btn-start-custom').addEventListener('click', () => {
-            // Check if board is empty
             if (slots.every(s => s === null)) {
-                alert("請先放置節拍卡片，或點擊「隨機填滿」！"); // Only exception for basic validation msg
+                showToast("請先放置節拍卡片，或點擊「隨機產生」！");
                 return;
             }
-            startChallenge(4, "自訂節奏 (4小節)", slots);
+            startChallenge(4, "自訂譜面 (4小節)", slots);
         });
 
         document.getElementById('btn-play-again').addEventListener('click', () => {
@@ -741,7 +1083,7 @@
             switchView('home');
         });
 
-        // Init
+        // 初始化編輯器棋盤
         renderEditorBoard();
     </script>
 </body>
