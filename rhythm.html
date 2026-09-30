@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>動感節拍組合器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f8fafc;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+
+        .bg-pattern {
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        .card-shadow {
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .card-shadow:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+        }
+
+        /* 顏色與卡片定義 */
+        .note-quarter { background-color: #38bdf8; color: #fff; border-color: #0284c7; }
+        .note-eighth { background-color: #f43f5e; color: #fff; border-color: #be123c; }
+        .note-half { background-color: #10b981; color: #fff; border-color: #047857; }
+        .note-rest { background-color: #475569; color: #cbd5e1; border-color: #94a3b8; border-style: dashed; }
+        
+        .deck-selected {
+            outline: 4px solid #f59e0b;
+            transform: scale(1.05) translateY(-4px);
+        }
+        .slot-active { background-color: #fef3c7 !important; border-color: #f59e0b !important; }
+
+        /* 遊戲下落音符 */
+        .falling-note {
+            position: absolute;
+            width: 70%;
+            left: 15%;
+            height: 48px;
+            border-radius: 12px;
+            border-bottom-width: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.8rem;
+            z-index: 10;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .falling-rest {
+            opacity: 0.8;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
+        }
+
+        @keyframes floatUpFade {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+        }
+        .hit-feedback {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 900;
+            font-size: 3rem;
+            pointer-events: none;
+            z-index: 50;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            animation: floatUpFade 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .feedback-perfect { color: #facc15; }
+        .feedback-good { color: #4ade80; }
+        .feedback-miss { color: #f87171; }
+        .feedback-penalty { color: #ef4444; font-size: 3.5rem; text-shadow: 0 0 20px #ef4444; }
+
+        @keyframes shakeAndFlash {
+            0% { transform: translate(1px, 1px) rotate(0deg); background-color: rgba(239, 68, 68, 0.3); }
+            10% { transform: translate(-2px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); background-color: rgba(239, 68, 68, 0.5); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); background-color: transparent; }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .error-shake {
+            animation: shakeAndFlash 0.4s;
+        }
+        .track-hit-flash {
+            background: linear-gradient(to top, rgba(250, 204, 21, 0.5), transparent) !important;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col bg-pattern relative">
+
+    <div id="home-view" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-4 z-10 bg-pattern transition-opacity duration-300">
+        <header class="text-center mb-10">
+            <h1 class="text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-4">✨ 動感節拍組合器 ✨</h1>
+            <p class="text-lg md:text-2xl text-sky-700 font-semibold bg-white/80 px-6 py-2 rounded-full shadow-sm inline-block">
+                選擇遊玩模式，考驗你的節奏感！
+            </p>
+        </header>
+
+        <div class="flex flex-col gap-6 w-full max-w-sm mb-8">
+            <button id="btn-mode-editor" class="card-shadow bg-blue-500 hover:bg-blue-400 text-white font-bold text-3xl py-6 px-4 rounded-3xl border-b-8 border-blue-700 flex flex-col items-center">
+                <span>✏️ 自訂節奏</span>
+                <span class="text-sm md:text-base text-blue-200 mt-1 opacity-80">(排版 16 格小節)</span>
+            </button>
+            <div class="h-1 w-full bg-slate-300 rounded-full my-2 relative">
+                <span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-f8fafc px-3 text-slate-500 font-bold text-sm">OR</span>
+            </div>
+            <button class="diff-btn card-shadow bg-green-400 hover:bg-green-300 text-green-900 font-bold text-2xl py-4 px-4 rounded-2xl border-b-6 border-green-600 flex justify-between items-center" data-measures="6">
+                <span>🌱 簡單挑戰</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">6 小節</span>
+            </button>
+            <button class="diff-btn card-shadow bg-orange-400 hover:bg-orange-300 text-orange-900 font-bold text-2xl py-4 px-4 rounded-2xl border-b-6 border-orange-600 flex justify-between items-center" data-measures="12">
+                <span>🔥 中等挑戰</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">12 小節</span>
+            </button>
+            <button class="diff-btn card-shadow bg-purple-500 hover:bg-purple-400 text-white font-bold text-2xl py-4 px-4 rounded-2xl border-b-6 border-purple-700 flex justify-between items-center" data-measures="18">
+                <span>⚡ 困難挑戰</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">18 小節</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="editor-view" class="absolute inset-0 w-full h-full flex-col items-center p-4 overflow-y-auto hidden z-20 bg-pattern">
+        <header class="text-center mb-4 shrink-0 mt-2 flex justify-between items-center w-full max-w-4xl px-4">
+            <button id="btn-back-home" class="bg-white border-2 border-slate-300 text-slate-600 font-bold py-2 px-4 rounded-xl shadow-sm hover:bg-slate-100">
+                ◀ 返回
+            </button>
+            <h1 class="text-2xl md:text-4xl font-bold text-sky-600 drop-shadow-sm">自訂節奏模式</h1>
+            <div class="w-16"></div> <!-- Spacer for centering -->
+        </header>
+
+        <!-- 工具列 -->
+        <div class="flex flex-wrap gap-3 mb-4 shrink-0 justify-center">
+            <button id="btn-clear" class="card-shadow bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl border-2 border-gray-300">🗑️ 清空</button>
+            <button id="btn-random-editor" class="card-shadow bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 rounded-xl border-2 border-purple-300">🎲 隨機填滿</button>
+            <button id="btn-start-custom" class="card-shadow bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold text-xl py-2 px-8 rounded-xl border-b-4 border-green-700 animate-pulse">
+                🎮 開始挑戰！
+            </button>
+        </div>
+
+        <!-- 16格編排區 (4小節) -->
+        <main class="w-full max-w-4xl bg-white p-4 rounded-3xl shadow-lg border-4 border-sky-100 shrink-0 mb-4" id="board">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 1 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m1"></div></div>
+                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 2 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m2"></div></div>
+                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 3 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m3"></div></div>
+                <div class="bg-sky-50 p-2 rounded-xl border-2 border-sky-100"><div class="text-sky-500 text-sm font-bold mb-1 px-1">第 4 小節</div><div class="grid grid-cols-4 gap-2 h-20 md:h-24" id="grid-m4"></div></div>
+            </div>
+        </main>
+
+        <!-- 卡片牌組 -->
+        <div class="w-full max-w-4xl bg-orange-50 p-4 rounded-3xl border-4 border-orange-200 shrink-0 mb-8">
+            <div class="grid grid-cols-4 gap-2 md:gap-4 w-full" id="deck">
+                <div class="deck-card card-shadow note-quarter rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab" draggable="true" data-type="quarter">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">♩</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ta (1拍)</div>
+                </div>
+                <div class="deck-card card-shadow note-eighth rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab" draggable="true" data-type="eighth">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">♫</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ti-Ti (1拍)</div>
+                </div>
+                <div class="deck-card card-shadow note-rest rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab border-dashed" draggable="true" data-type="rest">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">𝄽</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Shh (1拍)</div>
+                </div>
+                <div class="deck-card card-shadow note-half rounded-xl border-b-4 p-2 flex flex-col items-center justify-center cursor-grab" draggable="true" data-type="half">
+                    <div class="text-3xl md:text-5xl font-bold pointer-events-none">𝅗𝅥</div><div class="font-bold text-xs md:text-sm mt-1 pointer-events-none">Ta-a (2拍)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-view" class="absolute inset-0 w-full h-full flex-col bg-gray-900 z-30 hidden">
+        <div class="absolute top-0 w-full p-4 flex justify-between items-start z-40">
+            <div class="text-white">
+                <div class="text-sm text-gray-400 font-bold tracking-widest">COMBO</div>
+                <div id="combo-display" class="text-5xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">0</div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-400 font-bold tracking-widest">SCORE</div>
+                <div id="score-display" class="text-4xl font-bold text-white drop-shadow-md">0</div>
+            </div>
+        </div>
+
+        <div id="game-track" class="w-full max-w-sm mx-auto h-full bg-gray-800 border-x-4 border-gray-700 relative overflow-hidden flex flex-col">
+            <div id="game-count-in" class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+                <span id="game-count-text" class="text-[120px] font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] opacity-0 transition-opacity duration-100"></span>
+            </div>
+            <div id="notes-container" class="absolute inset-0 w-full h-full pointer-events-none"></div>
+            <!-- Hit Zone -->
+            <div class="absolute bottom-40 w-full h-20 border-y-2 border-white/40 bg-white/10 z-20 flex items-center justify-center" id="hit-zone">
+                <div class="w-full h-1.5 bg-yellow-400/80 absolute top-1/2 -translate-y-1/2 shadow-[0_0_15px_yellow]"></div>
+            </div>
+            <div id="feedback-container" class="absolute bottom-60 w-full h-32 z-30 pointer-events-none"></div>
+        </div>
+
+        <div class="w-full max-w-sm mx-auto p-4 absolute bottom-0 left-1/2 -translate-x-1/2 z-40 bg-gray-900 pb-8">
+            <button id="btn-hit" class="w-full h-24 bg-gradient-to-b from-yellow-400 to-yellow-500 active:from-yellow-300 active:to-yellow-400 rounded-3xl border-b-8 border-yellow-700 text-4xl font-black text-yellow-900 shadow-[0_0_20px_rgba(234,179,8,0.4)] touch-none select-none transition-transform active:translate-y-2 active:border-b-0 mb-2">
+                HIT! <span class="block text-sm font-bold opacity-70 mt-1">(或按空白鍵)</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="result-modal" class="fixed inset-0 bg-black/85 z-[100] hidden flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center border-8 border-sky-400 shadow-[0_0_50px_rgba(56,189,248,0.5)] transform scale-90 transition-transform duration-300" id="result-box">
+            <h2 class="text-4xl font-black text-gray-800 mb-2">挑戰完成！</h2>
+            <p class="text-gray-500 font-bold mb-6" id="result-difficulty-text">模式</p>
+            
+            <div class="bg-sky-50 rounded-2xl p-4 mb-4 border-2 border-sky-100">
+                <div class="text-sm text-sky-600 font-bold tracking-widest mb-1">TOTAL SCORE</div>
+                <div class="text-6xl font-black text-sky-500 drop-shadow-sm" id="final-score">0</div>
+            </div>
+            
+            <div class="flex justify-between bg-orange-50 rounded-2xl p-4 mb-8 border-2 border-orange-100">
+                <div class="text-left">
+                    <div class="text-sm text-orange-600 font-bold">Max Combo</div>
+                    <div class="text-3xl font-black text-orange-500" id="final-combo">0</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-green-600 font-bold">Perfects</div>
+                    <div class="text-3xl font-black text-green-500" id="final-perfects">0</div>
+                </div>
+            </div>
+            <button id="btn-play-again" class="w-full card-shadow bg-sky-500 hover:bg-sky-400 text-white font-bold text-2xl py-4 rounded-2xl border-b-6 border-sky-700 transition-colors">
+                🏠 回到主選單
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const noteData = {
+            'quarter': { symbol: '♩', label: 'Ta', beats: 1, class: 'note-quarter border-sky-600' },
+            'eighth': { symbol: '♫', label: 'Ti-Ti', beats: 1, class: 'note-eighth border-rose-700' },
+            'rest': { symbol: '𝄽', label: 'Shh', beats: 1, class: 'note-rest border-slate-400' },
+            'half': { symbol: '𝅗𝅥', label: 'Ta-a', beats: 2, class: 'note-half border-emerald-700' }
+        };
+
+        // UI Views
+        const views = {
+            home: document.getElementById('home-view'),
+            editor: document.getElementById('editor-view'),
+            game: document.getElementById('game-view'),
+            result: document.getElementById('result-modal')
+        };
+
+        function switchView(viewName) {
+            Object.values(views).forEach(v => {
+                v.classList.add('hidden');
+                v.classList.remove('flex');
+            });
+            views[viewName].classList.remove('hidden');
+            views[viewName].classList.add('flex');
+        }
+
+        // --- Editor State ---
+        let slots = new Array(16).fill(null);
+        let selectedNoteType = null;
+
+        // --- Game State ---
+        let audioCtx = null;
+        let gameNotes = [];
+        let gameAnimationFrame;
+        let isGameRunning = false;
+        
+        let score = 0, combo = 0, maxCombo = 0, perfectCount = 0;
+        let currentModeText = "";
+        
+        const BPM = 95; 
+        const BEAT_DURATION = 60 / BPM; 
+        const FALL_DURATION = 1.8; 
+        
+        // 判定時間閾值 (秒)
+        const TIME_PERFECT = 0.08;
+        const TIME_GOOD = 0.20;
+        // 防瞎按判定範圍 (超過這個時間距離，視為打空氣)
+        const TIME_MISS_LIMIT = 0.25;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playDing(time) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1046.50, time); // C6
+            osc.frequency.exponentialRampToValueAtTime(2093.00, time + 0.1); // C7
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.6, time + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+            osc.start(time); osc.stop(time + 0.3);
+        }
+
+        function playBuzzer(time) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(120, time);
+            osc.frequency.linearRampToValueAtTime(80, time + 0.3);
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.8, time + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
+            osc.start(time); osc.stop(time + 0.5);
+        }
+
+        function playMetronome(time, isAccent) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(isAccent ? 1200 : 800, time);
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.4, time + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+            osc.start(time); osc.stop(time + 0.1);
+        }
+
+        function playKick(time) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(120, time);
+            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.4);
+            gain.gain.setValueAtTime(0.7, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
+            osc.start(time); osc.stop(time + 0.5);
+        }
+
+        function playSnare(time) {
+            const bSize = audioCtx.sampleRate * 0.1; 
+            const buffer = audioCtx.createBuffer(1, bSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 1200;
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.3, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            noise.start(time);
+        }
+
+        function scheduleBackingTrack(startTime, measures) {
+            const totalBeats = measures * 4;
+            for(let i=4; i>0; i--) playMetronome(startTime - (i * BEAT_DURATION), i === 4);
+            for(let i=0; i<totalBeats; i++) {
+                const t = startTime + (i * BEAT_DURATION);
+                if (i % 2 === 0) playKick(t); else playSnare(t);
+            }
+        }
+
+        function createSlotEl(index, span, type) {
+            const div = document.createElement('div');
+            div.dataset.index = index;
+            div.className = `slot transition-all relative cursor-pointer flex flex-col items-center justify-center rounded-xl h-full w-full `;
+            if (span === 2) div.classList.add('col-span-2');
+
+            if (type) {
+                const nd = noteData[type];
+                div.classList.add('card-shadow', 'border-b-4');
+                // Ensure tailwind class list is merged
+                nd.class.split(' ').forEach(c => div.classList.add(c));
+                const size = span === 2 ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl';
+                div.innerHTML = `<div class="${size} font-bold pointer-events-none leading-none">${nd.symbol}</div>`;
+            } else {
+                div.classList.add('border-2', 'border-dashed', 'border-sky-300', 'bg-white', 'hover:bg-sky-50');
+            }
+            return div;
+        }
+
+        function renderEditorBoard() {
+            for (let m = 0; m < 4; m++) {
+                const container = document.getElementById(`grid-m${m+1}`);
+                container.innerHTML = '';
+                const startIndex = m * 4;
+                for (let i = startIndex; i < startIndex + 4; i++) {
+                    const state = slots[i];
+                    if (!state) {
+                        container.appendChild(createSlotEl(i, 1, null));
+                    } else if (state.main) {
+                        const beats = noteData[state.type].beats;
+                        container.appendChild(createSlotEl(i, beats, state.type));
+                    }
+                }
+            }
+        }
+
+        function clearSlotInfo(index) {
+            if (!slots[index]) return;
+            if (slots[index].main && noteData[slots[index].type].beats === 2) {
+                slots[index] = null;
+                if(index + 1 < 16 && slots[index + 1] && slots[index + 1].type === 'tied') slots[index + 1] = null;
+            } else if (slots[index].type === 'tied') {
+                const parentIdx = slots[index].parent;
+                slots[parentIdx] = null;
+                slots[index] = null;
+            } else {
+                slots[index] = null;
+            }
+        }
+
+        function placeNote(index, type) {
+            if (index < 0 || index >= 16) return;
+            const beats = noteData[type].beats;
+            if (beats === 2) {
+                if (index % 4 === 3 || index === 15) { // Cannot place 2-beat note at end of measure
+                    const slotEl = document.querySelector(`.slot[data-index="${index}"]`);
+                    if(slotEl) { slotEl.classList.add('bg-red-200'); setTimeout(() => slotEl.classList.remove('bg-red-200'), 300); }
+                    return;
+                }
+                clearSlotInfo(index); clearSlotInfo(index + 1);
+                slots[index] = { type: type, main: true };
+                slots[index + 1] = { type: 'tied', parent: index };
+            } else {
+                clearSlotInfo(index);
+                slots[index] = { type: type, main: true };
+            }
+            renderEditorBoard();
+        }
+
+        // Editor Event Listeners
+        document.getElementById('board').addEventListener('click', (e) => {
+            const slot = e.target.closest('.slot');
+            if (slot) {
+                const idx = parseInt(slot.dataset.index);
+                if (selectedNoteType) placeNote(idx, selectedNoteType);
+                else { clearSlotInfo(idx); renderEditorBoard(); }
+            }
+        });
+
+        const deckCards = document.querySelectorAll('.deck-card');
+        deckCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deckCards.forEach(c => c.classList.remove('deck-selected'));
+                if (selectedNoteType === card.dataset.type) selectedNoteType = null;
+                else { selectedNoteType = card.dataset.type; card.classList.add('deck-selected'); }
+            });
+            card.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text', card.dataset.type); selectedNoteType = card.dataset.type; });
+        });
+
+        document.body.addEventListener('click', (e) => {
+            if (!e.target.closest('.deck-card') && !e.target.closest('.slot')) {
+                selectedNoteType = null; deckCards.forEach(c => c.classList.remove('deck-selected'));
+            }
+        });
+
+        const board = document.getElementById('board');
+        board.addEventListener('dragover', e => { e.preventDefault(); const s = e.target.closest('.slot'); if(s) s.classList.add('slot-active'); });
+        board.addEventListener('dragleave', e => { const s = e.target.closest('.slot'); if(s) s.classList.remove('slot-active'); });
+        board.addEventListener('drop', e => {
+            e.preventDefault();
+            const s = e.target.closest('.slot');
+            if(s) {
+                s.classList.remove('slot-active');
+                const t = e.dataTransfer.getData('text');
+                if(t) placeNote(parseInt(s.dataset.index), t);
+            }
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => { slots = new Array(16).fill(null); renderEditorBoard(); });
+        
+        function fillRandomSlots(measures) {
+            let tempSlots = new Array(measures * 4).fill(null);
+            const types = ['quarter', 'eighth', 'rest', 'half'];
+            let i = 0;
+            while (i < measures * 4) {
+                const r = types[Math.floor(Math.random() * types.length)];
+                if (r === 'half') {
+                    if (i % 4 !== 3 && i !== (measures * 4)-1) {
+                        tempSlots[i] = { type: 'half', main: true };
+                        tempSlots[i+1] = { type: 'tied', parent: i };
+                        i += 2;
+                    } else { tempSlots[i] = { type: 'quarter', main: true }; i++; }
+                } else {
+                    tempSlots[i] = { type: r, main: true }; i++;
+                }
+            }
+            return tempSlots;
+        }
+
+        document.getElementById('btn-random-editor').addEventListener('click', () => {
+            slots = fillRandomSlots(4);
+            renderEditorBoard();
+        });
+
+        function parseSlotsToGameNotes(slotArray, startTime) {
+            let notes = [];
+            let id = 0;
+            for (let i = 0; i < slotArray.length; i++) {
+                const state = slotArray[i];
+                if (!state || !state.main) continue;
+                
+                const targetTime = startTime + (i * BEAT_DURATION);
+                
+                if (state.type === 'quarter') {
+                    notes.push({ id: id++, targetTime, isRest: false, label: 'Ta', class: 'note-quarter border-sky-600', hit: false, missed: false, el: null });
+                } else if (state.type === 'half') {
+                    notes.push({ id: id++, targetTime, isRest: false, label: 'Ta-a', class: 'note-half border-emerald-700', hit: false, missed: false, el: null });
+                } else if (state.type === 'eighth') {
+                    notes.push({ id: id++, targetTime, isRest: false, label: 'Ti', class: 'note-eighth border-rose-700', hit: false, missed: false, el: null });
+                    notes.push({ id: id++, targetTime: targetTime + (BEAT_DURATION / 2), isRest: false, label: 'Ti', class: 'note-eighth border-rose-700', hit: false, missed: false, el: null });
+                } else if (state.type === 'rest') {
+                    notes.push({ id: id++, targetTime, isRest: true, label: 'Shh', class: 'note-rest border-slate-400 falling-rest', hit: false, missed: false, el: null });
+                }
+            }
+            return notes;
+        }
+
+        async function startChallenge(measures, title, predefinedSlots = null) {
+            initAudio();
+            switchView('game');
+            
+            document.getElementById('notes-container').innerHTML = '';
+            document.getElementById('feedback-container').innerHTML = '';
+            
+            score = 0; combo = 0; maxCombo = 0; perfectCount = 0;
+            currentModeText = title;
+            updateHUD();
+            isGameRunning = true;
+
+            const startTime = audioCtx.currentTime + (4 * BEAT_DURATION); 
+            
+            let finalSlots = predefinedSlots;
+            if (!finalSlots) finalSlots = fillRandomSlots(measures);
+
+            gameNotes = parseSlotsToGameNotes(finalSlots, startTime);
+            scheduleBackingTrack(startTime, measures);
+            
+            // Count-in Animation
+            const countText = document.getElementById('game-count-text');
+            for(let i=4; i>0; i--) {
+                setTimeout(() => {
+                    countText.textContent = i; countText.style.opacity = 1; countText.style.transform = 'scale(1.5)';
+                    setTimeout(() => { countText.style.transform = 'scale(1)'; countText.style.opacity = 0; }, 150);
+                }, (startTime - audioCtx.currentTime - (i * BEAT_DURATION)) * 1000);
+            }
+
+            gameAnimationFrame = requestAnimationFrame(gameLoop);
+        }
+
+        function updateHUD() {
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('combo-display').textContent = combo;
+            if (combo > maxCombo) maxCombo = combo;
+        }
+
+        function showFeedback(text, typeClass) {
+            const container = document.getElementById('feedback-container');
+            const el = document.createElement('div');
+            el.className = `hit-feedback ${typeClass}`;
+            el.textContent = text;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 600);
+        }
+
+        function gameLoop() {
+            if (!isGameRunning) return;
+            const now = audioCtx.currentTime;
+            const container = document.getElementById('notes-container');
+            const hitZone = document.getElementById('hit-zone');
+            
+            const hitLineY = hitZone.offsetTop + (hitZone.offsetHeight / 2);
+            let allDone = true;
+
+            gameNotes.forEach(note => {
+                if (note.hit || note.missed) return;
+                
+                const timeDiff = note.targetTime - now;
+                
+                // Passed the hit zone entirely
+                if (timeDiff < -TIME_GOOD) {
+                    note.missed = true;
+                    if (!note.isRest) { // missed a normal note -> Reset Combo
+                        combo = 0; updateHUD();
+                        showFeedback('Miss!', 'feedback-miss');
+                    }
+                    if (note.el) note.el.style.opacity = '0';
+                    return;
+                }
+                
+                allDone = false;
+
+                // Render logic
+                if (timeDiff <= FALL_DURATION && timeDiff >= -1.0) {
+                    if (!note.el) {
+                        note.el = document.createElement('div');
+                        note.el.className = `falling-note`;
+                        // add specific classes
+                        note.class.split(' ').forEach(c => note.el.classList.add(c));
+                        note.el.textContent = note.label;
+                        container.appendChild(note.el);
+                    }
+                    
+                    const progress = 1 - (timeDiff / FALL_DURATION);
+                    const y = (progress * hitLineY) - 24; 
+                    note.el.style.transform = `translateY(${y}px)`;
+                }
+            });
+
+            if (allDone && gameNotes.length > 0) {
+                setTimeout(endGame, 1500);
+                isGameRunning = false;
+                return;
+            }
+
+            if (isGameRunning) gameAnimationFrame = requestAnimationFrame(gameLoop);
+        }
+
+        function triggerPenalty() {
+            playBuzzer(audioCtx.currentTime);
+            showFeedback('錯誤!', 'feedback-penalty');
+            combo = 0; updateHUD();
+            
+            const gameViewContainer = document.getElementById('game-view');
+            gameViewContainer.classList.add('error-shake');
+            setTimeout(() => gameViewContainer.classList.remove('error-shake'), 400);
+        }
+
+        function triggerHit() {
+            if (!isGameRunning) return;
+            
+            const track = document.getElementById('game-track');
+            track.classList.add('track-hit-flash');
+            setTimeout(() => track.classList.remove('track-hit-flash'), 100);
+
+            const now = audioCtx.currentTime;
+            let closestNote = null;
+            let minDiff = Infinity;
+            
+            // Find absolute closest unhandled note
+            gameNotes.forEach(note => {
+                if (note.hit || note.missed) return;
+                const absDiff = Math.abs(note.targetTime - now);
+                if (absDiff < minDiff) { minDiff = absDiff; closestNote = note; }
+            });
+
+            // ANTI-SPAM LOGIC
+            if (!closestNote || minDiff > TIME_MISS_LIMIT) {
+                // Hitting empty air (no note nearby)
+                triggerPenalty();
+                return;
+            }
+
+            // Note is in range, analyze it
+            if (closestNote.isRest) {
+                // Hit a rest note! Penalty!
+                closestNote.hit = true;
+                if (closestNote.el) closestNote.el.style.opacity = '0';
+                triggerPenalty();
+            } else {
+                // Successful Hit!
+                closestNote.hit = true; 
+                if (closestNote.el) {
+                    closestNote.el.style.transform += ' scale(1.5)';
+                    closestNote.el.style.opacity = '0';
+                }
+                
+                playDing(now);
+                combo++;
+                
+                if (minDiff <= TIME_PERFECT) {
+                    score += 200; perfectCount++; showFeedback('Perfect!', 'feedback-perfect');
+                } else {
+                    score += 100; showFeedback('Good!', 'feedback-good');
+                }
+                updateHUD();
+            }
+        }
+
+        const hitBtn = document.getElementById('btn-hit');
+        hitBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerHit(); }, {passive: false});
+        hitBtn.addEventListener('mousedown', (e) => { e.preventDefault(); triggerHit(); });
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && isGameRunning) {
+                e.preventDefault();
+                hitBtn.classList.add('scale-95', 'brightness-90');
+                triggerHit();
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') hitBtn.classList.remove('scale-95', 'brightness-90');
+        });
+
+        function endGame() {
+            cancelAnimationFrame(gameAnimationFrame);
+            document.getElementById('result-difficulty-text').textContent = currentModeText;
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-combo').textContent = maxCombo;
+            document.getElementById('final-perfects').textContent = perfectCount;
+            
+            switchView('result');
+            setTimeout(() => {
+                document.getElementById('result-box').classList.remove('scale-90');
+                document.getElementById('result-box').classList.add('scale-100');
+            }, 10);
+        }
+
+        // Navigation Bindings
+        document.getElementById('btn-mode-editor').addEventListener('click', () => switchView('editor'));
+        document.getElementById('btn-back-home').addEventListener('click', () => switchView('home'));
+        
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const measures = parseInt(btn.dataset.measures);
+                const text = btn.querySelector('span').textContent + ` (${measures}小節)`;
+                startChallenge(measures, text, null);
+            });
+        });
+
+        document.getElementById('btn-start-custom').addEventListener('click', () => {
+            // Check if board is empty
+            if (slots.every(s => s === null)) {
+                alert("請先放置節拍卡片，或點擊「隨機填滿」！"); // Only exception for basic validation msg
+                return;
+            }
+            startChallenge(4, "自訂節奏 (4小節)", slots);
+        });
+
+        document.getElementById('btn-play-again').addEventListener('click', () => {
+            document.getElementById('result-box').classList.remove('scale-100');
+            document.getElementById('result-box').classList.add('scale-90');
+            switchView('home');
+        });
+
+        // Init
+        renderEditorBoard();
+    </script>
+</body>
+</html>
