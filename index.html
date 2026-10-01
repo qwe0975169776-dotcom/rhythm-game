@@ -1029,6 +1029,11 @@
                         if (!note.isRest) { // 漏掉實體音符，重置 Combo
                             p.combo = 0; updateHUD(p);
                             showFeedback(p, 'Miss!', 'feedback-miss');
+                        } else { // 休止符：成功忍住不按，算一次 Combo 並得 100 分
+                            p.combo++;
+                            p.score += 100;
+                            updateHUD(p);
+                            showFeedback(p, 'Rest!', 'feedback-good');
                         }
                         if (note.el) note.el.style.opacity = '0';
                         return;
