@@ -248,11 +248,13 @@
     <!-- 遊戲進行畫面 (單人 1 個軌道 / 雙人 2 個軌道，由 JS 動態產生) -->
     <div id="game-view" class="absolute inset-0 w-full h-full flex-col bg-gray-900 z-30 hidden overflow-hidden select-none">
         <div id="players-wrap" class="w-full h-full flex"></div>
+        <!-- 退出鍵：需連按兩次以免誤觸 -->
+        <button id="btn-exit-game" type="button" aria-label="退出遊戲" class="absolute top-2 left-1/2 -translate-x-1/2 z-[60] w-9 h-9 rounded-full bg-gray-700/90 hover:bg-gray-600 text-gray-200 font-black text-lg border-2 border-gray-500 flex items-center justify-center active:scale-90 transition-transform">✕</button>
     </div>
 
     <!-- 結算成績彈窗 (勝利畫面) -->
-    <div id="result-modal" class="fixed inset-0 bg-black/85 z-[100] hidden flex-col items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] p-7 max-w-sm w-full text-center border-8 border-amber-400 shadow-[0_0_60px_rgba(251,191,36,0.6)] transform scale-90 transition-transform duration-300 relative overflow-hidden" id="result-box">
+    <div id="result-modal" class="fixed inset-0 bg-black/85 z-[100] hidden flex-col items-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-[2.5rem] p-7 max-w-sm w-full text-center border-8 border-amber-400 shadow-[0_0_60px_rgba(251,191,36,0.6)] transform scale-90 transition-transform duration-300 relative overflow-hidden my-auto shrink-0" id="result-box">
             <div class="text-5xl mb-2 animate-bounce">🏆</div>
             <h2 id="result-title" class="text-3xl font-black text-gray-800 mb-1">演奏挑戰完成！</h2>
             <p class="text-gray-500 font-bold mb-4" id="result-difficulty-text">挑戰模式</p>
@@ -306,7 +308,7 @@
                 🔁 再來一次
             </button>
             <button id="btn-play-again" class="w-full card-shadow bg-sky-500 hover:bg-sky-400 text-white font-bold text-xl py-3 rounded-2xl border-b-6 border-sky-700 transition-colors">
-                🏠 回到主選單
+                🚪 退出遊戲（回主選單）
             </button>
         </div>
     </div>
@@ -384,6 +386,8 @@
 
         /* 最近一次挑戰的譜面，供「再來一次」使用 */
         let lastChallenge = null;
+        let gameSession = 0;          // 每開始/退出一局就 +1，用來作廢舊局殘留的計時器
+        let countdownTimers = [];
         
         // 判定時間閾值 (秒)
         const TIME_PERFECT = 0.085;
@@ -952,6 +956,9 @@
 
         async function startChallenge(measures, title, predefinedSlots = null) {
             initAudio();
+            gameSession++;
+            countdownTimers.forEach(clearTimeout);
+            countdownTimers = [];
             buildPlayerPanels();
             switchView('game');
 
@@ -973,7 +980,7 @@
 
             // 倒數 4 拍動畫 (所有軌道同步顯示)
             for (let i = 4; i > 0; i--) {
-                setTimeout(() => {
+                countdownTimers.push(setTimeout(() => {
                     players.forEach(p => {
                         p.countText.textContent = i;
                         p.countText.style.opacity = '1';
@@ -983,7 +990,7 @@
                             p.countText.style.opacity = '0';
                         }, 180);
                     });
-                }, (startTime - audioCtx.currentTime - (i * BEAT_DURATION)) * 1000);
+                }, (startTime - audioCtx.currentTime - (i * BEAT_DURATION)) * 1000));
             }
 
             gameAnimationFrame = requestAnimationFrame(gameLoop);
@@ -1048,7 +1055,8 @@
 
             // 所有玩家的音符都處理完畢，結束挑戰
             if (allDone && players.length > 0 && players[0].notes.length > 0) {
-                setTimeout(endGame, 1200);
+                const sid = gameSession;
+                setTimeout(() => { if (sid === gameSession) endGame(); }, 1200);
                 isGameRunning = false;
                 return;
             }
@@ -1202,6 +1210,37 @@
                 document.getElementById('result-box').classList.add('scale-100');
             }, 20);
         }
+
+        /* 中途退出：停止計時、停止伴奏聲音，回到主選單 */
+        function exitGame() {
+            isGameRunning = false;
+            gameSession++;
+            cancelAnimationFrame(gameAnimationFrame);
+            countdownTimers.forEach(clearTimeout);
+            countdownTimers = [];
+            if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; } // 關閉音訊即可取消所有已排程的伴奏
+            players = [];
+            document.getElementById('players-wrap').innerHTML = '';
+            switchView('home');
+        }
+
+        let exitArmed = false, exitArmTimer = null;
+        document.getElementById('btn-exit-game').addEventListener('click', () => {
+            const btn = document.getElementById('btn-exit-game');
+            if (exitArmed) {
+                exitArmed = false; clearTimeout(exitArmTimer);
+                btn.classList.remove('bg-red-500', 'text-white');
+                exitGame();
+                return;
+            }
+            exitArmed = true;
+            btn.classList.add('bg-red-500', 'text-white');
+            showToast('再按一次「✕」就會退出遊戲');
+            exitArmTimer = setTimeout(() => {
+                exitArmed = false;
+                btn.classList.remove('bg-red-500', 'text-white');
+            }, 2500);
+        });
 
         // 導航與按鈕事件
         document.getElementById('btn-mode-editor').addEventListener('click', () => switchView('editor'));
