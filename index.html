@@ -41,6 +41,7 @@
             outline: 4px solid #f59e0b;
             transform: scale(1.05) translateY(-4px);
         }
+        .speed-control button:disabled { opacity: 0.4; cursor: not-allowed; }
         .slot-active { background-color: #fef3c7 !important; border-color: #f59e0b !important; }
 
         /* 遊戲下落音符 (已放大音符符號以利學生辨識) */
@@ -137,6 +138,15 @@
         </header>
 
         <div class="flex flex-col gap-4 w-full max-w-sm mb-6">
+            <div class="speed-control flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm ">
+                <span class="text-sm font-bold text-sky-700">⏱️ 速度</span>
+                <button type="button" class="speed-down card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="放慢速度">−</button>
+                <div class="min-w-[96px] text-center leading-tight">
+                    <div class="speed-bpm font-black text-sky-600 text-lg">96 BPM</div>
+                    <div class="speed-label text-xs font-bold text-slate-500">標準</div>
+                </div>
+                <button type="button" class="speed-up card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="加快速度">＋</button>
+            </div>
             <button id="btn-mode-editor" class="card-shadow bg-blue-500 hover:bg-blue-400 text-white font-bold text-2xl md:text-3xl py-5 px-4 rounded-3xl border-b-8 border-blue-700 flex flex-col items-center">
                 <span>✏️ 自訂節奏譜</span>
                 <span class="text-xs md:text-sm text-blue-200 mt-1 opacity-90">(創作 4 小節 16 拍樂曲)</span>
@@ -167,7 +177,16 @@
         </header>
 
         <!-- 工具列 -->
-        <div class="flex flex-wrap gap-3 mb-4 shrink-0 justify-center">
+        <div class="flex flex-wrap gap-3 mb-4 shrink-0 justify-center items-center">
+            <div class="speed-control flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm ">
+                <span class="text-sm font-bold text-sky-700">⏱️ 速度</span>
+                <button type="button" class="speed-down card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="放慢速度">−</button>
+                <div class="min-w-[96px] text-center leading-tight">
+                    <div class="speed-bpm font-black text-sky-600 text-lg">96 BPM</div>
+                    <div class="speed-label text-xs font-bold text-slate-500">標準</div>
+                </div>
+                <button type="button" class="speed-up card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="加快速度">＋</button>
+            </div>
             <button id="btn-clear" class="card-shadow bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl border-2 border-gray-300">🗑️ 清空譜面</button>
             <button id="btn-random-editor" class="card-shadow bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 rounded-xl border-2 border-purple-300">🎲 隨機產生</button>
             <button id="btn-start-custom" class="card-shadow bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 text-white font-bold text-xl py-2 px-8 rounded-xl border-b-4 border-green-700 shadow-md">
@@ -279,7 +298,20 @@
                 </div>
             </div>
 
-            <button id="btn-play-again" class="w-full card-shadow bg-sky-500 hover:bg-sky-400 text-white font-bold text-xl py-4 rounded-2xl border-b-6 border-sky-700 transition-colors">
+            <div class="speed-control flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm mb-4">
+                <span class="text-sm font-bold text-sky-700">⏱️ 速度</span>
+                <button type="button" class="speed-down card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="放慢速度">−</button>
+                <div class="min-w-[96px] text-center leading-tight">
+                    <div class="speed-bpm font-black text-sky-600 text-lg">96 BPM</div>
+                    <div class="speed-label text-xs font-bold text-slate-500">標準</div>
+                </div>
+                <button type="button" class="speed-up card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="加快速度">＋</button>
+            </div>
+
+            <button id="btn-retry" class="w-full card-shadow bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xl py-4 rounded-2xl border-b-6 border-emerald-700 transition-colors mb-3">
+                🔁 再來一次
+            </button>
+            <button id="btn-play-again" class="w-full card-shadow bg-sky-500 hover:bg-sky-400 text-white font-bold text-xl py-3 rounded-2xl border-b-6 border-sky-700 transition-colors">
                 🏠 回到主選單
             </button>
         </div>
@@ -331,9 +363,33 @@
         let score = 0, combo = 0, maxCombo = 0, perfectCount = 0;
         let currentModeText = "";
         
-        const BPM = 96; 
-        const BEAT_DURATION = 60 / BPM; 
-        const FALL_DURATION = 1.7; 
+        /* 速度設定：BPM 可由學生自行調整 (每次 ±8) */
+        const BPM_MIN = 56, BPM_MAX = 136, BPM_STEP = 8, BPM_DEFAULT = 96;
+        const FALL_BEATS = 1.7 / (60 / BPM_DEFAULT); // 音符從頂端落到判定線約 2.72 拍，速度改變時保持相同視覺間距
+        let BPM = BPM_DEFAULT;
+        let BEAT_DURATION = 60 / BPM;
+        let FALL_DURATION = BEAT_DURATION * FALL_BEATS;
+
+        function getSpeedLabel(bpm) {
+            if (bpm <= 80) return '🐢 慢速';
+            if (bpm < BPM_DEFAULT) return '稍慢';
+            if (bpm === BPM_DEFAULT) return '標準';
+            if (bpm < 112) return '稍快';
+            return '🐇 快速';
+        }
+
+        function setBpm(value) {
+            BPM = Math.max(BPM_MIN, Math.min(BPM_MAX, value));
+            BEAT_DURATION = 60 / BPM;
+            FALL_DURATION = BEAT_DURATION * FALL_BEATS;
+            document.querySelectorAll('.speed-bpm').forEach(el => el.textContent = `${BPM} BPM`);
+            document.querySelectorAll('.speed-label').forEach(el => el.textContent = getSpeedLabel(BPM));
+            document.querySelectorAll('.speed-down').forEach(el => el.disabled = BPM <= BPM_MIN);
+            document.querySelectorAll('.speed-up').forEach(el => el.disabled = BPM >= BPM_MAX);
+        }
+
+        /* 最近一次挑戰的譜面，供「再來一次」使用 */
+        let lastChallenge = null;
         
         // 判定時間閾值 (秒)
         const TIME_PERFECT = 0.085;
@@ -840,6 +896,7 @@
             
             let finalSlots = predefinedSlots;
             if (!finalSlots) finalSlots = fillRandomSlots(measures);
+            lastChallenge = { measures, title, slots: JSON.parse(JSON.stringify(finalSlots)) };
 
             // 產生音符判定陣列
             gameNotes = parseSlotsToGameNotes(finalSlots, startTime);
@@ -1082,6 +1139,19 @@
             document.getElementById('result-box').classList.add('scale-90');
             switchView('home');
         });
+
+        // 再來一次：同一份譜面、以目前速度重新挑戰
+        document.getElementById('btn-retry').addEventListener('click', () => {
+            if (!lastChallenge) return;
+            document.getElementById('result-box').classList.remove('scale-100');
+            document.getElementById('result-box').classList.add('scale-90');
+            startChallenge(lastChallenge.measures, lastChallenge.title, lastChallenge.slots);
+        });
+
+        // 速度調整按鈕 (主選單 / 編輯器 / 結算視窗共用同一個速度)
+        document.querySelectorAll('.speed-down').forEach(btn => btn.addEventListener('click', () => setBpm(BPM - BPM_STEP)));
+        document.querySelectorAll('.speed-up').forEach(btn => btn.addEventListener('click', () => setBpm(BPM + BPM_STEP)));
+        setBpm(BPM_DEFAULT);
 
         // 初始化編輯器棋盤
         renderEditorBoard();
