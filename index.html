@@ -41,6 +41,13 @@
             outline: 4px solid #f59e0b;
             transform: scale(1.05) translateY(-4px);
         }
+        .players-btn { background:#e0f2fe; color:#0369a1; border:2px solid #7dd3fc; border-radius:.75rem; padding:.4rem .8rem; font-weight:700; transition: transform .1s ease; }
+        .players-btn:active { transform: scale(.95); }
+        .players-btn.players-active { background:#0ea5e9; color:#fff; border-color:#0369a1; }
+        .two-p .combo-num { font-size: 2.4rem; line-height: 1; }
+        .two-p .score-num { font-size: 1.9rem; }
+        .two-p .hit-feedback { font-size: 1.7rem; }
+        .two-p .falling-note { font-size: 2rem; }
         .speed-control button:disabled { opacity: 0.4; cursor: not-allowed; }
         .slot-active { background-color: #fef3c7 !important; border-color: #f59e0b !important; }
 
@@ -129,15 +136,20 @@
     </div>
 
     <!-- 主選單畫面 -->
-    <div id="home-view" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-4 z-10 bg-pattern transition-opacity duration-300">
-        <header class="text-center mb-8">
+    <div id="home-view" class="absolute inset-0 w-full h-full flex flex-col items-center p-4 overflow-y-auto z-10 bg-pattern transition-opacity duration-300">
+        <header class="text-center mb-8 mt-auto">
             <h1 class="text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-3">✨ 動感節拍組合器 ✨</h1>
             <p class="text-base md:text-xl text-sky-700 font-semibold bg-white/90 px-6 py-2 rounded-full shadow-sm inline-block">
                 🎵 聽旋律、抓準拍點！支援手機觸控與滑鼠打擊
             </p>
         </header>
 
-        <div class="flex flex-col gap-4 w-full max-w-sm mb-6">
+        <div class="flex flex-col gap-4 w-full max-w-sm mb-auto">
+            <div class="players-toggle flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm">
+                <span class="text-sm font-bold text-sky-700">🎮 人數</span>
+                <button type="button" class="players-btn" data-players="1">👤 單人</button>
+                <button type="button" class="players-btn" data-players="2">👥 雙人對戰</button>
+            </div>
             <div class="speed-control flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm ">
                 <span class="text-sm font-bold text-sky-700">⏱️ 速度</span>
                 <button type="button" class="speed-down card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="放慢速度">−</button>
@@ -178,6 +190,11 @@
 
         <!-- 工具列 -->
         <div class="flex flex-wrap gap-3 mb-4 shrink-0 justify-center items-center">
+            <div class="players-toggle flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm">
+                <span class="text-sm font-bold text-sky-700">🎮 人數</span>
+                <button type="button" class="players-btn" data-players="1">👤 單人</button>
+                <button type="button" class="players-btn" data-players="2">👥 雙人對戰</button>
+            </div>
             <div class="speed-control flex items-center justify-center gap-2 bg-white/90 rounded-2xl border-2 border-sky-200 px-3 py-1.5 shadow-sm ">
                 <span class="text-sm font-bold text-sky-700">⏱️ 速度</span>
                 <button type="button" class="speed-down card-shadow w-10 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-black text-2xl border-2 border-sky-300 leading-none" aria-label="放慢速度">−</button>
@@ -228,60 +245,19 @@
         </div>
     </div>
 
-    <!-- 遊戲進行畫面 -->
+    <!-- 遊戲進行畫面 (單人 1 個軌道 / 雙人 2 個軌道，由 JS 動態產生) -->
     <div id="game-view" class="absolute inset-0 w-full h-full flex-col bg-gray-900 z-30 hidden overflow-hidden select-none">
-        <!-- 頂部計分板 -->
-        <div class="absolute top-0 w-full p-4 flex justify-between items-start z-40 pointer-events-none">
-            <div class="text-white">
-                <div class="text-xs text-amber-400 font-bold tracking-widest uppercase">Combo</div>
-                <div id="combo-display" class="text-5xl font-black text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">0</div>
-            </div>
-            <div class="text-right">
-                <div class="text-xs text-sky-400 font-bold tracking-widest uppercase">Score</div>
-                <div id="score-display" class="text-4xl font-bold text-white drop-shadow-md">0</div>
-            </div>
-        </div>
-
-        <!-- 下落軌道 (支援直接點擊/觸控判定) -->
-        <div id="game-track" class="w-full max-w-sm mx-auto h-full bg-gray-800/95 border-x-4 border-gray-700 relative overflow-hidden flex flex-col cursor-pointer active:brightness-110">
-            <!-- 倒數動畫層 -->
-            <div id="game-count-in" class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-                <span id="game-count-text" class="text-[110px] font-black text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.9)] opacity-0 transition-all duration-100"></span>
-            </div>
-
-            <!-- 音符下落層 -->
-            <div id="notes-container" class="absolute inset-0 w-full h-full pointer-events-none"></div>
-
-            <!-- 判定線區域 (Hit Zone) -->
-            <div class="absolute bottom-36 w-full h-20 border-y-2 border-amber-400/50 bg-amber-400/10 z-20 flex items-center justify-center pointer-events-none" id="hit-zone">
-                <div class="w-full h-1 bg-amber-400 shadow-[0_0_15px_#f59e0b]"></div>
-                <span class="absolute right-3 text-[11px] font-bold text-amber-300/70 tracking-widest uppercase">Target Line</span>
-            </div>
-
-            <!-- 打擊反饋浮動層 -->
-            <div id="feedback-container" class="absolute bottom-56 w-full h-32 z-30 pointer-events-none"></div>
-
-            <div class="absolute bottom-28 w-full text-center text-xs text-gray-400 pointer-events-none font-medium">
-                👆 點擊軌道或下方大按鈕皆可打擊
-            </div>
-        </div>
-
-        <!-- 底部大打擊按鈕 (統一滑鼠或觸控) -->
-        <div class="w-full max-w-sm mx-auto p-4 absolute bottom-0 left-1/2 -translate-x-1/2 z-40 bg-gradient-to-t from-gray-950 via-gray-900 to-transparent pb-6">
-            <button id="btn-hit" class="w-full h-24 relative overflow-hidden bg-gradient-to-b from-amber-400 to-amber-500 active:from-amber-300 active:to-amber-400 rounded-3xl border-b-8 border-amber-700 text-3xl font-black text-amber-950 shadow-[0_0_25px_rgba(245,158,11,0.5)] touch-none select-none transition-transform active:translate-y-2 active:border-b-2 flex flex-col items-center justify-center">
-                <span>HIT!</span>
-                <span class="text-xs font-bold text-amber-900/90 tracking-wide mt-0.5">👆 點擊或觸控打擊</span>
-            </button>
-        </div>
+        <div id="players-wrap" class="w-full h-full flex"></div>
     </div>
 
     <!-- 結算成績彈窗 (勝利畫面) -->
     <div id="result-modal" class="fixed inset-0 bg-black/85 z-[100] hidden flex-col items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] p-7 max-w-sm w-full text-center border-8 border-amber-400 shadow-[0_0_60px_rgba(251,191,36,0.6)] transform scale-90 transition-transform duration-300 relative overflow-hidden" id="result-box">
             <div class="text-5xl mb-2 animate-bounce">🏆</div>
-            <h2 class="text-3xl font-black text-gray-800 mb-1">演奏挑戰完成！</h2>
+            <h2 id="result-title" class="text-3xl font-black text-gray-800 mb-1">演奏挑戰完成！</h2>
             <p class="text-gray-500 font-bold mb-4" id="result-difficulty-text">挑戰模式</p>
             
+            <div id="result-1p">
             <div class="bg-amber-50 rounded-2xl p-4 mb-3 border-2 border-amber-200">
                 <div class="text-xs text-amber-600 font-bold tracking-widest mb-1 uppercase">Total Score</div>
                 <div class="text-6xl font-black text-amber-500 drop-shadow-sm" id="final-score">0</div>
@@ -295,6 +271,24 @@
                 <div class="bg-emerald-50 rounded-2xl p-3 border-2 border-emerald-100 text-center">
                     <div class="text-xs text-emerald-600 font-bold">Perfects</div>
                     <div class="text-2xl font-black text-emerald-500" id="final-perfects">0</div>
+                </div>
+            </div>
+            <div id="result-2p" class="hidden">
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                <div id="r2-card-0" class="rounded-2xl p-3 border-4 border-amber-200 bg-amber-50 transition-transform">
+                    <div class="text-sm font-black text-amber-700 mb-1">1P</div>
+                    <div class="text-xs text-amber-700 font-bold uppercase">Score</div>
+                    <div class="text-4xl font-black text-amber-500" id="r2-score-0">0</div>
+                    <div class="text-xs text-gray-500 font-bold mt-2">Max Combo <span class="text-sky-500 text-base font-black" id="r2-combo-0">0</span></div>
+                    <div class="text-xs text-gray-500 font-bold">Perfects <span class="text-emerald-500 text-base font-black" id="r2-perf-0">0</span></div>
+                </div>
+                <div id="r2-card-1" class="rounded-2xl p-3 border-4 border-violet-200 bg-violet-50 transition-transform">
+                    <div class="text-sm font-black text-violet-700 mb-1">2P</div>
+                    <div class="text-xs text-violet-700 font-bold uppercase">Score</div>
+                    <div class="text-4xl font-black text-violet-500" id="r2-score-1">0</div>
+                    <div class="text-xs text-gray-500 font-bold mt-2">Max Combo <span class="text-sky-500 text-base font-black" id="r2-combo-1">0</span></div>
+                    <div class="text-xs text-gray-500 font-bold">Perfects <span class="text-emerald-500 text-base font-black" id="r2-perf-1">0</span></div>
+                </div>
                 </div>
             </div>
 
@@ -356,11 +350,11 @@
         let slots = new Array(16).fill(null);
         let selectedNoteType = null;
         let audioCtx = null;
-        let gameNotes = [];
-        let gameAnimationFrame;
+                let gameAnimationFrame;
         let isGameRunning = false;
         
-        let score = 0, combo = 0, maxCombo = 0, perfectCount = 0;
+        let numPlayers = 1;      // 1 = 單人，2 = 雙人對戰 (左右分割畫面)
+        let players = [];        // 每位玩家各有自己的軌道、音符、分數與連擊
         let currentModeText = "";
         
         /* 速度設定：BPM 可由學生自行調整 (每次 ±8) */
@@ -405,13 +399,13 @@
         }
 
         /* 玩家正確命中時的清脆叮聲 */
-        function playHitDing(time) {
+        function playHitDing(time, pitch = 1) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(1046.50, time); // C6
-            osc.frequency.exponentialRampToValueAtTime(2093.00, time + 0.08); // C7
+            osc.frequency.setValueAtTime(1046.50 * pitch, time); // C6
+            osc.frequency.exponentialRampToValueAtTime(2093.00 * pitch, time + 0.08); // C7
             gain.gain.setValueAtTime(0, time);
             gain.gain.linearRampToValueAtTime(0.5, time + 0.01);
             gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
@@ -880,107 +874,180 @@
             return notes;
         }
 
+        const PLAYER_THEME = [
+            { label: '1P', badge: 'bg-amber-400 text-amber-950', key: 'A', pitch: 1,
+              btn: 'from-amber-400 to-amber-500 active:from-amber-300 active:to-amber-400 border-amber-700 text-amber-950 shadow-[0_0_25px_rgba(245,158,11,0.5)]', hint: 'text-amber-900/90' },
+            { label: '2P', badge: 'bg-violet-500 text-white', key: 'L', pitch: 1.26,
+              btn: 'from-violet-400 to-violet-500 active:from-violet-300 active:to-violet-400 border-violet-700 text-white shadow-[0_0_25px_rgba(139,92,246,0.5)]', hint: 'text-violet-100' }
+        ];
+
+        /* 依照人數建立遊戲軌道：單人 1 個，雙人左右各 1 個 */
+        function buildPlayerPanels() {
+            const wrap = document.getElementById('players-wrap');
+            const two = numPlayers === 2;
+            wrap.innerHTML = '';
+            wrap.classList.toggle('two-p', two);
+            players = [];
+
+            for (let i = 0; i < numPlayers; i++) {
+                const theme = PLAYER_THEME[i];
+                const panel = document.createElement('div');
+                panel.className = 'player-panel relative flex-1 h-full min-w-0' + (two && i === 0 ? ' border-r-4 border-gray-600' : '');
+                panel.innerHTML = `
+                    <div class="absolute top-0 w-full px-3 pt-3 pb-1 z-40 pointer-events-none">
+                        ${two ? `<div class="flex justify-center mb-1"><span class="${theme.badge} font-black text-sm px-3 py-0.5 rounded-full shadow">${theme.label}</span></div>` : ''}
+                        <div class="flex justify-between items-start">
+                            <div class="text-white">
+                                <div class="text-xs text-amber-400 font-bold tracking-widest uppercase">Combo</div>
+                                <div class="combo-display combo-num text-5xl font-black text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">0</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-sky-400 font-bold tracking-widest uppercase">Score</div>
+                                <div class="score-display score-num text-4xl font-bold text-white drop-shadow-md">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="game-track w-full max-w-sm mx-auto h-full bg-gray-800/95 ${two ? 'border-x-2' : 'border-x-4'} border-gray-700 relative overflow-hidden flex flex-col cursor-pointer active:brightness-110">
+                        <div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+                            <span class="game-count-text text-[110px] font-black text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.9)] opacity-0 transition-all duration-100"></span>
+                        </div>
+                        <div class="notes-container absolute inset-0 w-full h-full pointer-events-none"></div>
+                        <div class="hit-zone absolute bottom-36 w-full h-20 border-y-2 border-amber-400/50 bg-amber-400/10 z-20 flex items-center justify-center pointer-events-none">
+                            <div class="w-full h-1 bg-amber-400 shadow-[0_0_15px_#f59e0b]"></div>
+                            ${two ? '' : '<span class="absolute right-3 text-[11px] font-bold text-amber-300/70 tracking-widest uppercase">Target Line</span>'}
+                        </div>
+                        <div class="feedback-container absolute bottom-56 w-full h-32 z-30 pointer-events-none"></div>
+                        <div class="absolute bottom-28 w-full text-center text-xs text-gray-400 pointer-events-none font-medium">
+                            ${two ? '👆 點自己這一側即可打擊' : '👆 點擊軌道或下方大按鈕皆可打擊'}
+                        </div>
+                    </div>
+
+                    <div class="w-full max-w-sm mx-auto ${two ? 'p-2' : 'p-4'} absolute bottom-0 left-1/2 -translate-x-1/2 z-40 bg-gradient-to-t from-gray-950 via-gray-900 to-transparent pb-6">
+                        <button class="btn-hit w-full h-24 relative overflow-hidden bg-gradient-to-b ${theme.btn} rounded-3xl border-b-8 text-3xl font-black touch-none select-none transition-transform active:translate-y-2 active:border-b-2 flex flex-col items-center justify-center">
+                            <span>HIT!</span>
+                            <span class="text-xs font-bold ${theme.hint} tracking-wide mt-0.5">${two ? `👆 點擊或按 ${theme.key} 鍵` : '👆 點擊、觸控或按空白鍵'}</span>
+                        </button>
+                    </div>`;
+                wrap.appendChild(panel);
+
+                const q = sel => panel.querySelector(sel);
+                const p = {
+                    index: i, panel,
+                    track: q('.game-track'), notesEl: q('.notes-container'), hitZone: q('.hit-zone'),
+                    feedbackEl: q('.feedback-container'), countText: q('.game-count-text'), hitBtn: q('.btn-hit'),
+                    comboEl: q('.combo-display'), scoreEl: q('.score-display'),
+                    score: 0, combo: 0, maxCombo: 0, perfect: 0, notes: [],
+                    lastHit: 0  // 每位玩家各自防抖，避免雙人同時按下時互相擋掉
+                };
+                players.push(p);
+
+                const onHit = e => handleHitInput(e, p);
+                [p.hitBtn, p.track].forEach(el => {
+                    el.addEventListener('touchstart', onHit, { passive: false });
+                    el.addEventListener('mousedown', onHit);
+                });
+            }
+        }
+
         async function startChallenge(measures, title, predefinedSlots = null) {
             initAudio();
+            buildPlayerPanels();
             switchView('game');
-            
-            document.getElementById('notes-container').innerHTML = '';
-            document.getElementById('feedback-container').innerHTML = '';
-            
-            score = 0; combo = 0; maxCombo = 0; perfectCount = 0;
-            currentModeText = title;
-            updateHUD();
+
+            currentModeText = title + (numPlayers === 2 ? ' ・雙人對戰' : '');
+            players.forEach(updateHUD);
             isGameRunning = true;
 
-            const startTime = audioCtx.currentTime + (4 * BEAT_DURATION); 
-            
+            const startTime = audioCtx.currentTime + (4 * BEAT_DURATION);
+
             let finalSlots = predefinedSlots;
             if (!finalSlots) finalSlots = fillRandomSlots(measures);
             lastChallenge = { measures, title, slots: JSON.parse(JSON.stringify(finalSlots)) };
 
-            // 產生音符判定陣列
-            gameNotes = parseSlotsToGameNotes(finalSlots, startTime);
-            
-            // 排程背景音樂（伴奏深度呼應生成的拍點卡片）
+            // 每位玩家使用同一份譜面，但各自擁有獨立的音符判定陣列
+            players.forEach(p => { p.notes = parseSlotsToGameNotes(finalSlots, startTime); });
+
+            // 背景音樂只排程一次 (兩位玩家共用同一首伴奏)
             scheduleMusicWithRhythm(startTime, finalSlots, measures);
-            
-            // 倒數 4 拍動畫
-            const countText = document.getElementById('game-count-text');
-            for(let i = 4; i > 0; i--) {
+
+            // 倒數 4 拍動畫 (所有軌道同步顯示)
+            for (let i = 4; i > 0; i--) {
                 setTimeout(() => {
-                    countText.textContent = i; 
-                    countText.style.opacity = '1'; 
-                    countText.style.transform = 'scale(1.4)';
-                    setTimeout(() => { 
-                        countText.style.transform = 'scale(1)'; 
-                        countText.style.opacity = '0'; 
-                    }, 180);
+                    players.forEach(p => {
+                        p.countText.textContent = i;
+                        p.countText.style.opacity = '1';
+                        p.countText.style.transform = 'scale(1.4)';
+                        setTimeout(() => {
+                            p.countText.style.transform = 'scale(1)';
+                            p.countText.style.opacity = '0';
+                        }, 180);
+                    });
                 }, (startTime - audioCtx.currentTime - (i * BEAT_DURATION)) * 1000);
             }
 
             gameAnimationFrame = requestAnimationFrame(gameLoop);
         }
 
-        function updateHUD() {
-            document.getElementById('score-display').textContent = score;
-            document.getElementById('combo-display').textContent = combo;
-            if (combo > maxCombo) maxCombo = combo;
+        function updateHUD(p) {
+            p.scoreEl.textContent = p.score;
+            p.comboEl.textContent = p.combo;
+            if (p.combo > p.maxCombo) p.maxCombo = p.combo;
         }
 
-        function showFeedback(text, typeClass) {
-            const container = document.getElementById('feedback-container');
+        function showFeedback(p, text, typeClass) {
             const el = document.createElement('div');
             el.className = `hit-feedback ${typeClass}`;
             el.textContent = text;
-            container.appendChild(el);
+            p.feedbackEl.appendChild(el);
             setTimeout(() => el.remove(), 600);
         }
 
         function gameLoop() {
             if (!isGameRunning) return;
             const now = audioCtx.currentTime;
-            const container = document.getElementById('notes-container');
-            const hitZone = document.getElementById('hit-zone');
-            
-            const hitLineY = hitZone.offsetTop + (hitZone.offsetHeight / 2);
             let allDone = true;
 
-            gameNotes.forEach(note => {
-                if (note.hit || note.missed) return;
-                
-                const timeDiff = note.targetTime - now;
-                
-                // 超過判定線且未打擊
-                if (timeDiff < -TIME_GOOD) {
-                    note.missed = true;
-                    if (!note.isRest) { // 漏掉實體音符，重置 Combo
-                        combo = 0; updateHUD();
-                        showFeedback('Miss!', 'feedback-miss');
-                    }
-                    if (note.el) note.el.style.opacity = '0';
-                    return;
-                }
-                
-                allDone = false;
+            players.forEach(p => {
+                const hitLineY = p.hitZone.offsetTop + (p.hitZone.offsetHeight / 2);
 
-                // 下落下軌渲染
-                if (timeDiff <= FALL_DURATION && timeDiff >= -1.0) {
-                    if (!note.el) {
-                        note.el = document.createElement('div');
-                        note.el.className = `falling-note`;
-                        note.class.split(' ').forEach(c => note.el.classList.add(c));
-                        note.el.textContent = note.label;
-                        container.appendChild(note.el);
+                p.notes.forEach(note => {
+                    if (note.hit || note.missed) return;
+
+                    const timeDiff = note.targetTime - now;
+
+                    // 超過判定線且未打擊
+                    if (timeDiff < -TIME_GOOD) {
+                        note.missed = true;
+                        if (!note.isRest) { // 漏掉實體音符，重置 Combo
+                            p.combo = 0; updateHUD(p);
+                            showFeedback(p, 'Miss!', 'feedback-miss');
+                        }
+                        if (note.el) note.el.style.opacity = '0';
+                        return;
                     }
-                    
-                    const progress = 1 - (timeDiff / FALL_DURATION);
-                    const y = (progress * hitLineY) - 28; 
-                    note.el.style.transform = `translateY(${y}px)`;
-                }
+
+                    allDone = false;
+
+                    // 下落軌道渲染
+                    if (timeDiff <= FALL_DURATION && timeDiff >= -1.0) {
+                        if (!note.el) {
+                            note.el = document.createElement('div');
+                            note.el.className = `falling-note`;
+                            note.class.split(' ').forEach(c => note.el.classList.add(c));
+                            note.el.textContent = note.label;
+                            p.notesEl.appendChild(note.el);
+                        }
+
+                        const progress = 1 - (timeDiff / FALL_DURATION);
+                        const y = (progress * hitLineY) - 28;
+                        note.el.style.transform = `translateY(${y}px)`;
+                    }
+                });
             });
 
-            // 所有音符處理完畢，結束挑戰
-            if (allDone && gameNotes.length > 0) {
+            // 所有玩家的音符都處理完畢，結束挑戰
+            if (allDone && players.length > 0 && players[0].notes.length > 0) {
                 setTimeout(endGame, 1200);
                 isGameRunning = false;
                 return;
@@ -989,48 +1056,45 @@
             if (isGameRunning) gameAnimationFrame = requestAnimationFrame(gameLoop);
         }
 
-        function triggerPenalty() {
+        function triggerPenalty(p) {
             playBuzzer(audioCtx.currentTime);
-            showFeedback('錯誤!', 'feedback-penalty');
-            combo = 0; updateHUD();
-            
-            const gameViewContainer = document.getElementById('game-view');
-            gameViewContainer.classList.add('error-shake');
-            setTimeout(() => gameViewContainer.classList.remove('error-shake'), 350);
+            showFeedback(p, '錯誤!', 'feedback-penalty');
+            p.combo = 0; updateHUD(p);
+
+            p.panel.classList.add('error-shake');
+            setTimeout(() => p.panel.classList.remove('error-shake'), 350);
         }
 
-        /* 核心打擊判定函數 */
-        function triggerHit() {
+        /* 核心打擊判定函數 (針對指定玩家) */
+        function triggerHit(p) {
             if (!isGameRunning) return;
-            
-            const track = document.getElementById('game-track');
-            track.classList.add('track-hit-flash');
-            setTimeout(() => track.classList.remove('track-hit-flash'), 100);
+
+            p.track.classList.add('track-hit-flash');
+            setTimeout(() => p.track.classList.remove('track-hit-flash'), 100);
 
             // 產生波紋動畫
-            const hitZone = document.getElementById('hit-zone');
             const ripple = document.createElement('div');
             ripple.className = 'hit-ripple';
-            hitZone.appendChild(ripple);
+            p.hitZone.appendChild(ripple);
             setTimeout(() => ripple.remove(), 350);
 
             const now = audioCtx.currentTime;
             let closestNote = null;
             let minDiff = Infinity;
-            
+
             // 尋找時間差最近的音符
-            gameNotes.forEach(note => {
+            p.notes.forEach(note => {
                 if (note.hit || note.missed) return;
                 const absDiff = Math.abs(note.targetTime - now);
-                if (absDiff < minDiff) { 
-                    minDiff = absDiff; 
-                    closestNote = note; 
+                if (absDiff < minDiff) {
+                    minDiff = absDiff;
+                    closestNote = note;
                 }
             });
 
             // 防瞎按 / 空按懲罰
             if (!closestNote || minDiff > TIME_MISS_LIMIT) {
-                triggerPenalty();
+                triggerPenalty(p);
                 return;
             }
 
@@ -1038,73 +1102,98 @@
             if (closestNote.isRest) {
                 closestNote.hit = true;
                 if (closestNote.el) closestNote.el.style.opacity = '0';
-                triggerPenalty();
+                triggerPenalty(p);
             } else {
                 // 正確命中
-                closestNote.hit = true; 
+                closestNote.hit = true;
                 if (closestNote.el) {
                     closestNote.el.style.transform += ' scale(1.4)';
                     closestNote.el.style.opacity = '0';
                 }
-                
-                playHitDing(now);
-                combo++;
-                
+
+                playHitDing(now, PLAYER_THEME[p.index].pitch);
+                p.combo++;
+
                 if (minDiff <= TIME_PERFECT) {
-                    score += 200; 
-                    perfectCount++; 
-                    showFeedback('Perfect!', 'feedback-perfect');
+                    p.score += 200;
+                    p.perfect++;
+                    showFeedback(p, 'Perfect!', 'feedback-perfect');
                 } else {
-                    score += 100; 
-                    showFeedback('Good!', 'feedback-good');
+                    p.score += 100;
+                    showFeedback(p, 'Good!', 'feedback-good');
                 }
-                updateHUD();
+                updateHUD(p);
             }
         }
 
-        /* 
-           統整純滑鼠與觸控打擊 (加入防抖避免 touchstart 與 mousedown 同時觸發)
+        /*
+           統整滑鼠、觸控與鍵盤打擊 (加入防抖避免 touchstart 與 mousedown 同時觸發)
         */
-        function handleHitInput(e) {
-            if (!isGameRunning) return;
-            if (e) {
-                if (e.type === 'touchstart') {
-                    e.preventDefault(); // 阻擋合成的 mousedown
-                }
+        function handleHitInput(e, p) {
+            if (!isGameRunning || !p) return;
+            if (e && e.type === 'touchstart') {
+                e.preventDefault(); // 阻擋合成的 mousedown
             }
             const currentMs = performance.now();
-            if (currentMs - lastHitTimestamp < 65) {
+            if (currentMs - p.lastHit < 65) {
                 return; // 65ms 內重複觸發視為同一打擊
             }
-            lastHitTimestamp = currentMs;
-            
-            // 點擊視覺反饋
-            const hitBtn = document.getElementById('btn-hit');
-            hitBtn.classList.add('scale-95');
-            setTimeout(() => hitBtn.classList.remove('scale-95'), 90);
+            p.lastHit = currentMs;
 
-            triggerHit();
+            // 點擊視覺反饋
+            p.hitBtn.classList.add('scale-95');
+            setTimeout(() => p.hitBtn.classList.remove('scale-95'), 90);
+
+            triggerHit(p);
         }
 
-        // 綁定大打擊按鈕
-        const hitBtn = document.getElementById('btn-hit');
-        hitBtn.addEventListener('touchstart', handleHitInput, { passive: false });
-        hitBtn.addEventListener('mousedown', handleHitInput);
-
-        // 綁定遊戲軌道判定區 (點擊軌道任何位置皆可打擊)
-        const gameTrack = document.getElementById('game-track');
-        gameTrack.addEventListener('touchstart', handleHitInput, { passive: false });
-        gameTrack.addEventListener('mousedown', handleHitInput);
+        // 鍵盤操作：單人 = 空白鍵 / A；雙人 = 1P 按 A、2P 按 L
+        document.addEventListener('keydown', (e) => {
+            if (!isGameRunning || e.repeat || players.length === 0) return;
+            const k = e.key.toLowerCase();
+            if (numPlayers === 1) {
+                if (k === ' ' || k === 'a') { e.preventDefault(); handleHitInput(e, players[0]); }
+            } else if (k === 'a') {
+                e.preventDefault(); handleHitInput(e, players[0]);
+            } else if (k === 'l') {
+                e.preventDefault(); handleHitInput(e, players[1]);
+            }
+        });
 
         function endGame() {
             cancelAnimationFrame(gameAnimationFrame);
             document.getElementById('result-difficulty-text').textContent = currentModeText;
-            document.getElementById('final-score').textContent = score;
-            document.getElementById('final-combo').textContent = maxCombo;
-            document.getElementById('final-perfects').textContent = perfectCount;
-            
+
+            const title = document.getElementById('result-title');
+            const box1 = document.getElementById('result-1p');
+            const box2 = document.getElementById('result-2p');
+
+            if (numPlayers === 1) {
+                const p = players[0];
+                title.textContent = '演奏挑戰完成！';
+                box1.classList.remove('hidden');
+                box2.classList.add('hidden');
+                document.getElementById('final-score').textContent = p.score;
+                document.getElementById('final-combo').textContent = p.maxCombo;
+                document.getElementById('final-perfects').textContent = p.perfect;
+            } else {
+                const [a, b] = players;
+                box1.classList.add('hidden');
+                box2.classList.remove('hidden');
+                players.forEach((p, i) => {
+                    document.getElementById(`r2-score-${i}`).textContent = p.score;
+                    document.getElementById(`r2-combo-${i}`).textContent = p.maxCombo;
+                    document.getElementById(`r2-perf-${i}`).textContent = p.perfect;
+                    const win = (i === 0 && a.score > b.score) || (i === 1 && b.score > a.score);
+                    document.getElementById(`r2-card-${i}`).classList.toggle('scale-105', win);
+                    document.getElementById(`r2-card-${i}`).classList.toggle('ring-4', win);
+                    document.getElementById(`r2-card-${i}`).classList.toggle('ring-yellow-300', win);
+                });
+                title.textContent = a.score === b.score ? '🤝 平手！' : (a.score > b.score ? '🏆 1P 獲勝！' : '🏆 2P 獲勝！');
+            }
+
             switchView('result');
-            
+
             // 播放勝利結算音樂
             playVictoryFanfare();
 
@@ -1152,6 +1241,14 @@
         document.querySelectorAll('.speed-down').forEach(btn => btn.addEventListener('click', () => setBpm(BPM - BPM_STEP)));
         document.querySelectorAll('.speed-up').forEach(btn => btn.addEventListener('click', () => setBpm(BPM + BPM_STEP)));
         setBpm(BPM_DEFAULT);
+
+        // 人數切換 (主選單 / 編輯器共用同一個設定)
+        function setPlayers(n) {
+            numPlayers = n;
+            document.querySelectorAll('.players-btn').forEach(b => b.classList.toggle('players-active', parseInt(b.dataset.players) === n));
+        }
+        document.querySelectorAll('.players-btn').forEach(btn => btn.addEventListener('click', () => setPlayers(parseInt(btn.dataset.players))));
+        setPlayers(1);
 
         // 初始化編輯器棋盤
         renderEditorBoard();
