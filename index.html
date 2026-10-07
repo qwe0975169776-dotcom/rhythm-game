@@ -489,7 +489,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         <header class="text-center mb-6 mt-auto">
             <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-3">✨ 動感節拍組合器 ✨</h1>
             <p class="text-base md:text-xl text-sky-700 font-semibold bg-white/90 px-6 py-2 rounded-full shadow-sm inline-block">🎵 聽旋律、抓準拍點！支援手機觸控與滑鼠打擊</p>
-            <div class="mt-1"><span id="app-version" class="text-xs font-bold text-sky-700/80 bg-white/70 px-3 py-0.5 rounded-full">版本 13</span></div>
+            <div class="mt-1"><span id="app-version" class="text-xs font-bold text-sky-700/80 bg-white/70 px-3 py-0.5 rounded-full">版本 14</span></div>
             <div class="mt-3 flex flex-wrap justify-center items-center gap-2">
                 <div class="inline-flex items-center gap-2 bg-white/90 rounded-full px-4 py-1.5 shadow-sm font-bold border-2 border-sky-200">
                     <span class="text-sky-700 text-sm md:text-base">👤 學生: <span id="display-username" class="text-sky-600 font-black">---</span></span>
@@ -694,7 +694,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             <div class="bg-white rounded-3xl border-4 border-amber-200 shadow-lg p-4">
                 <h2 class="text-xl font-black text-amber-600">✨ 擊打特效</h2>
                 <p class="text-xs font-bold text-slate-500 mb-2">打中音符時的爆破動畫。每一種都能先按「預覽」看看再決定；特效很輕量，手機也順。</p>
-                <canvas id="fx-preview" class="w-full rounded-2xl bg-slate-800 border-2 border-slate-600" style="height:140px;display:block"></canvas>
+                <canvas id="fx-preview" class="w-full rounded-2xl bg-slate-800 border-2 border-slate-600" style="height:260px;display:block"></canvas>
                 <div id="fx-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3"></div>
             </div>
         </div>
@@ -771,7 +771,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             ACH_BONUS: { first: 30, rankS: 60, nomiss: 80, combo50: 60, duo: 30, practice: 60, games10: 80, themes3: 100, long: 100, streak3: 100, perfect: 150, fast: 150, games50: 200, themesAll: 300, play30: 100, play60: 150, play90: 300 }
         };
         // 版本號：之後每次優化把這個數字 +1（首頁與診斷資訊都會跟著變）
-        const APP_VERSION = 13;
+        const APP_VERSION = 14;
         { const v = document.getElementById('app-version'); if (v) v.textContent = '版本 ' + APP_VERSION; }
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMzNB3ElbCxvcaJ5JnMq0HNWryWZTnFJbkifYSALIoZB7htYBx81u6Sb0D7yvEzIC4/exec"; 
 
@@ -927,81 +927,140 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         const fxCanvas = document.getElementById('particle-canvas'), fxCtx = fxCanvas.getContext('2d');
         let particles = []; window.addEventListener('resize', () => { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }); fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight;
-        // ================= ✨ 擊打特效（商店可買）：全部畫在同一張 2D 畫布上，不新增任何 DOM；數量有上限、省電模式更少更簡單 =================
+        // ================= ✨ 擊打特效（商店可買）：每一款 = 金色線上的爆破 ＋ 整條軌道的光柱 ＋ HIT 按鈕的反應 =================
+        // 全部畫在同一張 2D 畫布上，不新增任何網頁元素；粒子有上限、音符很密時自動減量；省電模式更少、不畫發光與拖尾、不震動
         const FX_LIST = [
             { id: 'classic',  name: '經典星火',  icon: '⭐', price: 0,    desc: '基本款：金色星星與綠色圓點迸開' },
-            { id: 'ring',     name: '光環擴散',  icon: '⭕', price: 400,  desc: '一圈一圈的光環往外擴散，簡潔清爽' },
-            { id: 'confetti', name: '彩紙繽紛',  icon: '🎊', price: 700,  desc: '彩色紙片翻飛灑落，像在慶祝' },
-            { id: 'notes',    name: '音符飄走',  icon: '🎶', price: 1100, desc: '小小的音符搖搖晃晃飄上天空' },
-            { id: 'bolt',     name: '閃電連擊',  icon: '⚡', price: 1600, desc: '藍白色閃電朝四面八方劈開' },
-            { id: 'firework', name: '煙火綻放',  icon: '🎆', price: 2200, desc: '拖著長長尾巴的彩色煙火' }
+            { id: 'ring',     name: '光環衝擊',  icon: '⭕', price: 400,  desc: '三圈大光環從金色線炸開，藍色光柱衝上去' },
+            { id: 'confetti', name: '彩紙派對',  icon: '🎊', price: 700,  desc: '幾十片彩紙往上噴再落下，像在開慶祝會' },
+            { id: 'notes',    name: '音符噴泉',  icon: '🎶', price: 1100, desc: '大大的彩色音符一串串飄上天，搖搖晃晃' },
+            { id: 'heart',    name: '愛心泡泡',  icon: '💖', price: 1100, desc: '粉紅愛心和泡泡慢慢飄上來，很可愛' },
+            { id: 'bolt',     name: '閃電風暴',  icon: '⚡', price: 1600, desc: '長長的閃電劈向四面八方，畫面閃一下白光' },
+            { id: 'star',     name: '流星許願',  icon: '🌠', price: 1600, desc: '大星星往外飛、一閃一閃，像在許願' },
+            { id: 'fire',     name: '火焰爆裂',  icon: '🔥', price: 2000, desc: '橘紅火星往上竄，畫面震一下' },
+            { id: 'firework', name: '煙火秀',    icon: '🎆', price: 2200, desc: '火箭咻地飛上去，在空中炸成彩色煙火' }
         ];
         const FX_BY = {}; FX_LIST.forEach(f => FX_BY[f.id] = f);
         const fxOwned = id => id === 'classic' || !!(users[currentUser] && users[currentUser].medals && users[currentUser].medals['fx_' + id]);
         const fxCur = () => { const m = users[currentUser] && users[currentUser].medals, id = m && m._fx; return id && FX_BY[id] && fxOwned(id) ? id : 'classic'; };
-        const noteSprites = {};
-        function noteSprite(ch, col) {
-            const k = ch + col; if (noteSprites[k]) return noteSprites[k];
-            const c = document.createElement('canvas'); c.width = c.height = 40; const g = c.getContext('2d'); g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-            g.lineWidth = 3; g.strokeStyle = 'rgba(0,0,0,.35)'; g.fillStyle = col; g.strokeText(ch, 20, 21); g.fillText(ch, 20, 21); return (noteSprites[k] = c);
+        const spriteCache = {};
+        function fxSprite(ch, col) {
+            const k = ch + col; if (spriteCache[k]) return spriteCache[k];
+            const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); g.font = 'bold 46px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.35)'; g.fillStyle = col; g.strokeText(ch, 32, 34); g.fillText(ch, 32, 34); return (spriteCache[k] = c);
         }
-        const rgbCss = c => `rgb(${c[0]},${c[1]},${c[2]})`;
-        // 把一次擊打的特效放進 arr（arr = 畫布上目前的粒子）。數量依擊打品質、省電模式、目前畫面上已有多少來縮減
-        function emitFx(arr, id, x, y, type, lo) {
+        let bubbleSp = null;
+        function fxBubble() {
+            if (bubbleSp) return bubbleSp; const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(24, 22, 4, 32, 32, 28);
+            gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(.5, 'rgba(150,215,255,.35)'); gr.addColorStop(1, 'rgba(120,190,255,.7)');
+            g.fillStyle = gr; g.beginPath(); g.arc(32, 32, 28, 0, 6.2832); g.fill(); g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 2; g.stroke(); return (bubbleSp = c);
+        }
+        const hslCss = (h, l) => `hsl(${Math.floor(h) % 360},95%,${l || 60}%)`;
+        let fxShake = 0, fxFlashT = 0, fxLastT = 0;
+        // 一次擊打的幾何：軌道寬、光柱高度、HIT 按鈕的位置（每 0.3 秒才量一次，不在每次擊打時強迫排版）
+        function hitGeo(p) {
+            const n = performance.now(); if (p._geo && n - p._geoT < 300) return p._geo;
+            const t = p.track.getBoundingClientRect(), b = p.hitBtn ? p.hitBtn.getBoundingClientRect() : null, hc = hitCenter(p);
+            p._geo = { tw: Math.max(60, t.width * 0.76), th: Math.max(80, hc[1] - t.top), bx: b ? b.left + b.width / 2 : hc[0], by: b ? b.top + b.height / 2 : hc[1] + 90, bw: b ? b.width : 160, bh: b ? b.height : 50 }; p._geoT = n; return p._geo;
+        }
+        // 把一次擊打的特效放進 arr。數量依擊打品質、省電模式、目前畫面上已有多少來縮減
+        function emitFx(arr, id, x, y, type, lo, geo) {
             const perf = type === 'perfect', live = arr.length, cap = lo ? 90 : 170; if (live >= cap) return;
-            const crowd = live > cap * 0.45, R = Math.random, base = perf ? [250, 204, 21] : [74, 222, 128], css = rgbCss(base);
-            const n = (a, b) => { const c = perf ? (lo ? b : a) : Math.ceil((lo ? b : a) / 3); return crowd ? Math.max(1, Math.ceil(c * 0.4)) : c; };
+            if (id !== 'classic') { const tn = performance.now(); if (tn - fxLastT < (lo ? 60 : 35)) return; fxLastT = tn; }   // 太密時略過一些（肉眼看不出差別，省下不少運算）
+            const crowd = live > cap * 0.45, R = Math.random, S = perf ? 1 : 0.55, TAU = 6.2832;
+            const G = geo || { tw: 180, th: 200, bx: x, by: y + 90, bw: 170, bh: 50 };
+            const n = (a, b) => Math.max(1, Math.round((lo ? b : a) * S * (crowd ? 0.4 : 1)));
+            const beam = (col, a) => arr.push({ k: 'beam', x, y, tw: G.tw, th: Math.min(G.th, 300), col, a: a || 0.55, lo, life: 1, decay: 0.07 });
+            const ripple = col => { arr.push({ k: 'ring', x: G.bx, y: G.by, r: 8, vr: 3.6, w: 6, col, life: 1, decay: 0.06 }); arr.push({ k: 'bglow', x: G.bx, y: G.by, w: G.bw, h: G.bh, col, life: 1, decay: 0.12 }); };
+            const rings = (k, col, vr, w) => { for (let i = 0; i < k; i++) arr.push({ k: 'ring', x, y, r: 6 + i * 14, vr: vr + i * 0.8, w: w - i, col, life: 1, decay: 0.04 }); };
+            const flash = (a, col) => { const tn = performance.now(); if (!lo && tn - fxFlashT > 320) { fxFlashT = tn; arr.push({ k: 'flash', a: Math.min(a, .25), col: col || '255,255,255', life: 1, decay: 0.16 }); } };
+            const shake = v => { if (!lo && !isPhone) fxShake = Math.max(fxShake, v); };   // 手機不震動（整個畫面位移對手機 GPU 負擔大）
             if (id === 'ring') {
-                const k = crowd ? 1 : (perf ? 2 : 1); for (let i = 0; i < k; i++) arr.push({ k: 'ring', x, y, r: 4 + i * 10, vr: 3.2 + i * 0.8, w: 5 - i, life: 1, decay: 0.05, css });
+                rings(perf ? 3 : 2, '80,180,255', 6.5, 9); beam('77,179,255'); ripple('77,179,255'); if (perf) flash(0.12, '120,190,255');
             } else if (id === 'confetti') {
-                const cnt = n(20, 9); for (let i = 0; i < cnt; i++) { const a = -Math.PI / 2 + (R() - .5) * 2.4, sp = 4 + R() * 7; arr.push({ k: 'conf', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, rot: R() * 6, vrot: .15 + R() * .25, size: 6 + R() * 4, life: 1, decay: 0.014 + R() * 0.01, css: `hsl(${Math.floor(R() * 360)},90%,60%)` }); }
+                const cnt = n(46, 22); for (let i = 0; i < cnt; i++) { const a = -1.57 + (R() - .5) * 2.6, sp = 6 + R() * 10; arr.push({ k: 'conf', x: x + (R() - .5) * G.tw * .7, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, rot: R() * 6, vr: .2 + R() * .3, sz: 8 + R() * 7, css: hslCss(R() * 360), life: 1, decay: 0.009 + R() * 0.007 }); }
+                beam('255,210,74', .35); ripple('255,210,74');
             } else if (id === 'notes') {
-                const cnt = n(5, 3), chs = ['♪', '♫', '♩']; for (let i = 0; i < cnt; i++) arr.push({ k: 'note', x: x + (R() - .5) * 40, y, vx: (R() - .5) * 1.2, vy: -(1.6 + R() * 1.8), t: R() * 6, sp: noteSprite(chs[Math.floor(R() * 3)], css), sz: 26 + R() * 12, life: 1, decay: 0.014 + R() * 0.006 });
+                const cnt = n(13, 7), chs = ['♪', '♫', '♩', '♬']; for (let i = 0; i < cnt; i++) arr.push({ k: 'note', x: x + (R() - .5) * G.tw * .8, y: y + R() * 16, vx: (R() - .5) * 1.4, vy: -(2.4 + R() * 3.4), t: R() * 6, sp: fxSprite(chs[i % 4], hslCss(R() * 360, 62)), sz: 36 + R() * 30, life: 1, decay: 0.008 + R() * 0.005 });
+                beam('255,154,213'); ripple('255,154,213');
+            } else if (id === 'heart') {
+                const cnt = n(15, 8); for (let i = 0; i < cnt; i++) arr.push({ k: 'note', x: x + (R() - .5) * G.tw * .85, y: y + R() * 14, vx: (R() - .5) * 1.2, vy: -(1.6 + R() * 2.6), t: R() * 6, sp: R() < .7 ? fxSprite('❤', '#ff5c8a') : fxBubble(), sz: 30 + R() * 30, life: 1, decay: 0.007 + R() * 0.004 });
+                beam('255,122,168', .5); ripple('255,122,168');
             } else if (id === 'bolt') {
-                const cnt = n(6, 3); for (let i = 0; i < cnt; i++) {
-                    const a = R() * 6.2832, len = (perf ? 70 : 45) + R() * 50, pts = [x, y]; let cx = x, cy = y; for (let j = 0; j < 4; j++) { const aa = a + (R() - .5) * 1.2; cx += Math.cos(aa) * len / 4; cy += Math.sin(aa) * len / 4; pts.push(cx, cy); }
-                    arr.push({ k: 'bolt', pts, life: 1, decay: 0.11, x, y });
+                const cnt = n(8, 3); for (let i = 0; i < cnt; i++) {
+                    const a = R() * TAU, len = (perf ? 150 : 100) + R() * 110, pts = [x, y], seg = lo ? 4 : 6; let cx = x, cy = y;
+                    for (let j = 0; j < seg; j++) { const aa = a + (R() - .5); cx += Math.cos(aa) * len / seg; cy += Math.sin(aa) * len / seg; pts.push(cx, cy); }
+                    arr.push({ k: 'bolt', pts, lo, life: 1, decay: 0.07 });
+                    if (!lo && R() < .5) { const m = pts.length / 2 | 0; let bx = pts[m * 2 - 2], by = pts[m * 2 - 1]; const f = [bx, by], ba = a + (R() < .5 ? -1 : 1) * .9; for (let j = 0; j < 3; j++) { bx += Math.cos(ba + (R() - .5) * .8) * 30; by += Math.sin(ba + (R() - .5) * .8) * 30; f.push(bx, by); } arr.push({ k: 'bolt', pts: f, thin: 1, lo, life: 1, decay: 0.09 }); }
                 }
+                flash(perf ? .35 : .2); beam('166,216,255', .7); ripple('166,216,255'); shake(perf ? 7 : 4);
+            } else if (id === 'star') {
+                const cnt = n(20, 10); for (let i = 0; i < cnt; i++) { const a = R() * TAU, sp = 4 + R() * 9; arr.push({ k: 'bigstar', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2, rot: R() * 6, vr: (R() - .5) * .3, sz: 10 + R() * 16, css: R() < .5 ? '#ffe14a' : '#fff3b0', tw: R() * 6, life: 1, decay: 0.016 + R() * 0.01 }); }
+                beam('255,225,74', .5); ripple('255,225,74'); flash(.1, '255,240,170');
+            } else if (id === 'fire') {
+                const cnt = n(38, 16); for (let i = 0; i < cnt; i++) { const a = -1.57 + (R() - .5) * 2.2, sp = 3 + R() * 8; arr.push({ k: 'ember', x: x + (R() - .5) * G.tw * .7, y: y + R() * 10, vx: Math.cos(a) * sp * .6, vy: Math.sin(a) * sp, sz: 5 + R() * 9, css: `hsl(${8 + Math.floor(R() * 32)},100%,${48 + Math.floor(R() * 12)}%)`, life: 1, decay: 0.014 + R() * 0.012 }); }
+                if (!lo) rings(2, '255,110,60', 6, 10); beam('255,106,61', .65); ripple('255,106,61'); shake(perf ? 8 : 4);
             } else if (id === 'firework') {
-                const cnt = n(16, 7), h0 = R() * 360; for (let i = 0; i < cnt; i++) { const a = R() * 6.2832, sp = 3 + R() * 6; arr.push({ k: 'fw', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: 0.022 + R() * 0.01, css: `hsl(${Math.floor(h0 + R() * 70) % 360},95%,62%)` }); }
+                arr.push({ k: 'rocket', x: x + (R() - .5) * 60, y, vy: -11, t: 0, cnt: n(38, 18), lo }); beam('255,179,71', .4); ripple('255,179,71');
             } else {   // 經典星火（原本的樣子）
-                let count = perf ? (lo ? 16 : 45) : (lo ? 6 : 15); if (crowd) count = Math.max(3, Math.ceil(count * 0.4));
+                const css = perf ? 'rgb(250,204,21)' : 'rgb(74,222,128)'; let count = perf ? (lo ? 16 : 45) : (lo ? 6 : 15); if (crowd) count = Math.max(3, Math.ceil(count * 0.4));
                 for (let i = 0; i < count; i++) { const angle = R() * Math.PI * 2, speed = R() * 8 + (perf ? 4 : 2); arr.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 3, life: 1.0, decay: R() * 0.02 + 0.015, css, size: R() * (perf ? 7 : 5) + 3, isStar: perf }); }
             }
         }
-        function spawnParticles(x, y, type) { emitFx(particles, fxCur(), x, y, type, document.body.classList.contains('lowfx')); }
-        function drawStar(ctx, cx, cy, spikes, outerR, innerR) { let rot=Math.PI/2*3, x=cx, y=cy, step=Math.PI/spikes; ctx.beginPath(); ctx.moveTo(cx, cy-outerR); for(let i=0; i<spikes; i++){ x=cx+Math.cos(rot)*outerR; y=cy+Math.sin(rot)*outerR; ctx.lineTo(x,y); rot+=step; x=cx+Math.cos(rot)*innerR; y=cy+Math.sin(rot)*innerR; ctx.lineTo(x,y); rot+=step; } ctx.lineTo(cx, cy-outerR); ctx.closePath(); }
+        function spawnParticles(x, y, type, p) { emitFx(particles, fxCur(), x, y, type, document.body.classList.contains('lowfx'), p ? hitGeo(p) : null); }
+        function drawStar(ctx, cx, cy, spikes, outerR, innerR, rot0) { let rot = rot0 === undefined ? Math.PI / 2 * 3 : rot0, x = cx, y = cy, step = Math.PI / spikes; ctx.beginPath(); ctx.moveTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR); for (let i = 0; i < spikes; i++) { x = cx + Math.cos(rot) * outerR; y = cy + Math.sin(rot) * outerR; ctx.lineTo(x, y); rot += step; x = cx + Math.cos(rot) * innerR; y = cy + Math.sin(rot) * innerR; ctx.lineTo(x, y); rot += step; } ctx.closePath(); }
         let lowFxOn = false;
         // 更新並畫出一批粒子（遊戲畫布與商店預覽共用）
         function stepFx(ctx, arr, w, h, lo) {
             ctx.clearRect(0, 0, w, h);
             for (let i = arr.length - 1; i >= 0; i--) {
-                const p = arr[i]; p.life -= p.decay; if (p.life <= 0) { arr.splice(i, 1); continue; }
-                const k = p.k; ctx.globalAlpha = p.life;
+                const p = arr[i], k = p.k;
+                if (k === 'rocket') {
+                    p.t++; p.y += p.vy; p.vy *= 0.94;
+                    if (p.t >= 14) { const h0 = Math.random() * 360, room = Math.max(5, (p.lo ? 100 : 190) - arr.length), cn = Math.min(p.cnt, room); for (let j = 0; j < cn; j++) { const a = Math.random() * 6.2832, sp = 2 + Math.random() * 7.5; arr.push({ k: 'fw', x: p.x, y: p.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, lo: p.lo, css: hslCss(h0 + Math.random() * 80), life: 1, decay: 0.014 + Math.random() * 0.01 }); } if (!p.lo) arr.push({ k: 'flash', a: .12, col: '255,230,180', life: 1, decay: .16 }); arr.splice(i, 1); continue; }
+                    ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.fillRect(p.x - 2, p.y - 6, 4, 10); continue;
+                }
+                p.life -= p.decay; if (p.life <= 0) { arr.splice(i, 1); continue; }
+                ctx.globalAlpha = p.life;
                 if (k === undefined) {
                     p.x += p.vx; p.y += p.vy; p.vy += 0.25; ctx.fillStyle = p.css;
                     if (lo) { const sz = p.size * 1.6; ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz); }
                     else if (p.isStar) { drawStar(ctx, p.x, p.y, 5, p.size, p.size / 2); ctx.fill(); }
                     else { ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }
+                } else if (k === 'beam') {
+                    const top = p.y - p.th;
+                    if (p.lo) { ctx.fillStyle = `rgba(${p.col},${p.a * 0.45})`; ctx.fillRect(p.x - p.tw / 2, p.y - Math.min(p.th, 140), p.tw, Math.min(p.th, 140)); }
+                    else { const gr = ctx.createLinearGradient(0, top, 0, p.y + 30); gr.addColorStop(0, `rgba(${p.col},0)`); gr.addColorStop(1, `rgba(${p.col},${p.a})`); ctx.fillStyle = gr; ctx.fillRect(p.x - p.tw / 2, top, p.tw, p.th + 30); }
+                } else if (k === 'bglow') {
+                    ctx.fillStyle = `rgba(${p.col},.5)`; ctx.fillRect(p.x - p.w / 2, p.y - p.h / 2, p.w, p.h);
+                } else if (k === 'flash') {
+                    ctx.fillStyle = `rgba(${p.col},${p.a})`; ctx.fillRect(0, 0, w, h);
                 } else if (k === 'ring') {
-                    p.r += p.vr; ctx.strokeStyle = p.css; ctx.lineWidth = Math.max(1, p.w * p.life); ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.stroke();
+                    p.r += p.vr; ctx.strokeStyle = `rgb(${p.col})`; ctx.lineWidth = Math.max(1, p.w * p.life); ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.stroke();
                 } else if (k === 'conf') {
-                    p.x += p.vx; p.y += p.vy; p.vy += 0.28; p.vx *= 0.99; p.rot += p.vrot; const cw = Math.max(1.5, Math.abs(Math.cos(p.rot)) * p.size);
-                    ctx.fillStyle = p.css; ctx.fillRect(p.x - cw / 2, p.y - p.size / 2, cw, p.size);
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.3; p.vx *= 0.99; p.rot += p.vr; const cw = Math.max(2, Math.abs(Math.cos(p.rot)) * p.sz);
+                    ctx.fillStyle = p.css; ctx.fillRect(p.x - cw / 2, p.y - p.sz / 2, cw, p.sz);
                 } else if (k === 'note') {
-                    p.t += 0.14; p.x += p.vx + Math.sin(p.t) * 1.1; p.y += p.vy; ctx.drawImage(p.sp, p.x - p.sz / 2, p.y - p.sz / 2, p.sz, p.sz);
+                    p.t += 0.12; p.x += p.vx + Math.sin(p.t) * 1.3; p.y += p.vy; ctx.drawImage(p.sp, p.x - p.sz / 2, p.y - p.sz / 2, p.sz, p.sz);
                 } else if (k === 'bolt') {
                     const q = p.pts; ctx.beginPath(); ctx.moveTo(q[0], q[1]); for (let j = 2; j < q.length; j += 2) ctx.lineTo(q[j], q[j + 1]);
-                    if (!lo) { ctx.strokeStyle = 'rgba(80,170,255,.55)'; ctx.lineWidth = 6; ctx.stroke(); }
-                    ctx.strokeStyle = '#e8f7ff'; ctx.lineWidth = lo ? 2.5 : 2.5; ctx.stroke();
+                    if (!p.lo) { ctx.strokeStyle = 'rgba(70,160,255,.6)'; ctx.lineWidth = p.thin ? 4 : 9; ctx.stroke(); }
+                    ctx.strokeStyle = '#f2fbff'; ctx.lineWidth = p.thin ? 1.5 : 3.2; ctx.stroke();
                 } else if (k === 'fw') {
-                    p.x += p.vx; p.y += p.vy; p.vx *= 0.95; p.vy = p.vy * 0.95 + 0.12; ctx.strokeStyle = p.css; ctx.lineWidth = 2.2; ctx.beginPath();
-                    ctx.moveTo(p.x - p.vx * (lo ? 1.5 : 3), p.y - p.vy * (lo ? 1.5 : 3)); ctx.lineTo(p.x, p.y); ctx.stroke();
+                    p.x += p.vx; p.y += p.vy; p.vx *= 0.95; p.vy = p.vy * 0.95 + 0.13; ctx.strokeStyle = p.css; ctx.lineWidth = 2.6; const tl = p.lo ? 1.5 : 3.5; ctx.beginPath(); ctx.moveTo(p.x - p.vx * tl, p.y - p.vy * tl); ctx.lineTo(p.x, p.y); ctx.stroke();
+                } else if (k === 'bigstar') {
+                    p.x += p.vx; p.y += p.vy; p.vx *= 0.97; p.vy = p.vy * 0.97 + 0.06; p.rot += p.vr; p.tw += 0.4; const sz = p.sz * (0.75 + 0.25 * Math.sin(p.tw));
+                    ctx.fillStyle = p.css; drawStar(ctx, p.x, p.y, 5, sz, sz * 0.45, p.rot); ctx.fill();
+                } else if (k === 'ember') {
+                    p.x += p.vx; p.y += p.vy; p.vy -= 0.05; p.vx *= 0.98; ctx.fillStyle = p.css; const es = Math.max(1, p.sz * p.life); if (lo) ctx.fillRect(p.x - es, p.y - es, es * 2, es * 2); else { ctx.beginPath(); ctx.arc(p.x, p.y, es, 0, 6.2832); ctx.fill(); }
                 }
             }
             ctx.globalAlpha = 1.0;
         }
-        function animateParticles() { if (!isPaused && particles.length > 0) stepFx(fxCtx, particles, fxCanvas.width, fxCanvas.height, lowFxOn); if (isGameRunning || particles.length > 0) requestAnimationFrame(animateParticles); }
+        // 畫面震動（只有閃電、火焰用；省電模式不震）：短短 0.2 秒，用位移，不重排
+        function shakeStep(el) { if (!el) return; if (fxShake > 0) { el.style.transform = `translate(${((Math.random() - .5) * fxShake * 2).toFixed(1)}px,${((Math.random() - .5) * fxShake * 2).toFixed(1)}px)`; fxShake *= 0.7; if (fxShake < 0.5) { fxShake = 0; el.style.transform = ''; } } }
+        const gameViewEl = document.getElementById('game-view');
+        function animateParticles() { if (!isPaused && particles.length > 0) { stepFx(fxCtx, particles, fxCanvas.width, fxCanvas.height, lowFxOn); shakeStep(gameViewEl); } if (isGameRunning || particles.length > 0) requestAnimationFrame(animateParticles); else { fxShake = 0; gameViewEl.style.transform = ''; } }
 
 
         // ================= 🎵 音樂引擎 =================
@@ -1784,7 +1843,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                             if (note.el) { note.el.style.opacity = '0'; note.el.style.willChange = ''; }
                             if (p.activeHoldNote === note) p.activeHoldNote = null;
                             const multi = getComboMulti(p.combo); p.score += 300 * multi; p.credit += 0.5; updateHUD(p);
-                            { const hc = hitCenter(p); spawnParticles(hc[0], hc[1], 'perfect'); } showFeedback(p, 'Hold Max!', 'feedback-perfect');
+                            { const hc = hitCenter(p); spawnParticles(hc[0], hc[1], 'perfect', p); } showFeedback(p, 'Hold Max!', 'feedback-perfect');
                         } else if (!p.isHolding || p.activeHoldNote !== note) {
                             note.completed = true; 
                             if (note.el) { note.el.style.opacity = '0'; note.el.style.willChange = ''; }
@@ -1793,7 +1852,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                             const beatsPassed = Math.floor((now - note.targetTime) / BEAT_DURATION);
                             if (beatsPassed > note.holdScored && beatsPassed <= note.visualBeats) {
                                 note.holdScored = beatsPassed; const multi = getComboMulti(p.combo); p.score += 100 * multi; updateHUD(p);
-                                { const hc = hitCenter(p); spawnParticles(hc[0], hc[1], 'good'); } showFeedback(p, 'Hold!', 'feedback-good'); playHitDing(now, PLAYER_THEME[p.index].pitch + 0.3);
+                                { const hc = hitCenter(p); spawnParticles(hc[0], hc[1], 'good', p); } showFeedback(p, 'Hold!', 'feedback-good'); playHitDing(now, PLAYER_THEME[p.index].pitch + 0.3);
                             }
                         }
                         continue;
@@ -1853,7 +1912,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             
             closestNote.hit = true; playHitDing(now, PLAYER_THEME[p.index].pitch); p.combo++; const multi = getComboMulti(p.combo); const multiText = '';
             const hc = hitCenter(p), cX = hc[0], cY = hc[1];
-            const q = minDiff <= TIME_PERFECT ? 1 : 0.7; p.credit += closestNote.isHold ? 0.5 * q : q; p.resolved++; if (minDiff <= TIME_PERFECT) { p.score += 200 * multi; p.perfect++; showFeedback(p, `Perfect!${multiText}`, 'feedback-perfect'); spawnParticles(cX, cY, 'perfect'); } else { p.goods++; p.score += 100 * multi; showFeedback(p, `Good!${multiText}`, 'feedback-good'); spawnParticles(cX, cY, 'good'); }
+            const q = minDiff <= TIME_PERFECT ? 1 : 0.7; p.credit += closestNote.isHold ? 0.5 * q : q; p.resolved++; if (minDiff <= TIME_PERFECT) { p.score += 200 * multi; p.perfect++; showFeedback(p, `Perfect!${multiText}`, 'feedback-perfect'); spawnParticles(cX, cY, 'perfect', p); } else { p.goods++; p.score += 100 * multi; showFeedback(p, `Good!${multiText}`, 'feedback-good'); spawnParticles(cX, cY, 'good', p); }
             updateHUD(p);
             
             if (closestNote.isHold) { p.activeHoldNote = closestNote; if (closestNote.el) closestNote.el.classList.add('holding-glow'); } 
@@ -2312,10 +2371,10 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         }
         function fxPreview(id) {
             const cv = document.getElementById('fx-preview'); if (!cv) return;
-            const w = cv.clientWidth || 300, h = 140; if (cv.width !== w) cv.width = w; if (cv.height !== h) cv.height = h;
+            const w = cv.clientWidth || 300, h = 260; if (cv.width !== w) cv.width = w; if (cv.height !== h) cv.height = h;
             const ctx = cv.getContext('2d'), lo = lowPower(); fxPrevTimers.forEach(clearTimeout); fxPrevTimers = []; fxPrevArr.length = 0;
-            const at = (ms, x, t) => fxPrevTimers.push(setTimeout(() => { if (views.shop.classList.contains('hidden')) return; emitFx(fxPrevArr, id, w * x, h * 0.55, t, lo); kick(); }, ms));
-            const kick = () => { if (fxPrevRun) return; fxPrevRun = true; const step = () => { if (views.shop.classList.contains('hidden')) { fxPrevArr.length = 0; fxPrevRun = false; return; } stepFx(ctx, fxPrevArr, w, h, lo); if (fxPrevArr.length > 0 || fxPrevTimers.length) requestAnimationFrame(step); else fxPrevRun = false; }; requestAnimationFrame(step); };
+            const at = (ms, x, t) => fxPrevTimers.push(setTimeout(() => { if (views.shop.classList.contains('hidden')) return; emitFx(fxPrevArr, id, w * x, h * 0.62, t, lo, { tw: Math.min(w * 0.3, 150), th: h * 0.6, bx: w * x, by: h - 22, bw: 90, bh: 30 }); kick(); }, ms));
+            const kick = () => { if (fxPrevRun) return; fxPrevRun = true; const step = () => { if (views.shop.classList.contains('hidden')) { fxPrevArr.length = 0; fxPrevRun = false; fxShake = 0; cv.style.transform = ''; return; } stepFx(ctx, fxPrevArr, w, h, lo); shakeStep(cv); if (fxPrevArr.length > 0 || fxPrevTimers.length) requestAnimationFrame(step); else { fxPrevRun = false; cv.style.transform = ''; } }; requestAnimationFrame(step); };
             at(0, 0.25, 'perfect'); at(450, 0.5, 'good'); at(900, 0.75, 'perfect'); fxPrevTimers.push(setTimeout(() => { fxPrevTimers = []; }, 2600));
         }
         document.getElementById('fx-list').addEventListener('click', (e) => {
