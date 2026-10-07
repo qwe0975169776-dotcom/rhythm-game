@@ -503,10 +503,10 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         <header class="text-center mb-6 mt-auto">
             <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-3">✨ 動感節拍組合器 ✨</h1>
             <p class="text-base md:text-xl text-sky-700 font-semibold bg-white/90 px-6 py-2 rounded-full shadow-sm inline-block">🎵 聽旋律、抓準拍點！支援手機觸控與滑鼠打擊</p>
-            <div class="mt-1"><span id="app-version" class="text-xs font-bold text-sky-700/80 bg-white/70 px-3 py-0.5 rounded-full">版本 15</span></div>
+            <div class="mt-1"><span id="app-version" class="text-xs font-bold text-sky-700/80 bg-white/70 px-3 py-0.5 rounded-full">版本 16</span></div>
             <div class="mt-3 flex flex-wrap justify-center items-center gap-2">
                 <div class="inline-flex items-center gap-2 bg-white/90 rounded-full px-4 py-1.5 shadow-sm font-bold border-2 border-sky-200">
-                    <span class="text-sky-700 text-sm md:text-base">👤 學生: <span id="display-username" class="text-sky-600 font-black">---</span></span>
+                    <span class="text-sky-700 text-sm md:text-base"><span id="home-avatar">👤</span> 學生: <span id="display-username" class="text-sky-600 font-black">---</span><span id="home-title" class="hidden ml-1 text-xs font-black text-amber-700 bg-amber-100 border border-amber-300 rounded-full px-2 py-0.5 align-middle"></span></span>
                     <button id="btn-switch-user" class="bg-sky-100 text-sky-600 text-xs px-2 py-1 rounded-lg hover:bg-sky-200 active:scale-95 transition-transform">切換</button>
                 </div>
                 <div id="home-wallet" class="inline-flex items-center gap-2 bg-amber-50 rounded-full px-4 py-1.5 shadow-sm font-bold text-amber-600 text-sm md:text-base border-2 border-amber-200"></div>
@@ -704,7 +704,19 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             <div id="shop-balance" class="text-5xl font-black text-amber-500">0</div>
         </div>
         <div id="shop-items" class="w-full max-w-3xl grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0"></div>
-        <div id="fx-shop" class="w-full max-w-3xl mt-6 mb-8 shrink-0">
+        <div class="h-6 shrink-0"></div>
+        <div id="title-shop" class="w-full max-w-3xl mb-6 shrink-0">
+            <div class="bg-white rounded-3xl border-4 border-amber-200 shadow-lg p-4">
+                <h2 class="text-xl font-black text-amber-600">🎖️ 頭銜與頭像</h2>
+                <p class="text-xs font-bold text-slate-500 mb-2">頭銜和頭像會顯示在首頁名字旁邊。按「試戴」先看看，喜歡再買；買了之後可以隨時換。</p>
+                <div id="id-preview" class="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 text-amber-800 font-black text-lg text-center py-3 mb-3"></div>
+                <h3 class="font-black text-slate-700 text-sm mb-1">頭銜</h3>
+                <div id="title-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4"></div>
+                <h3 class="font-black text-slate-700 text-sm mb-1">頭像</h3>
+                <div id="avatar-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+            </div>
+        </div>
+        <div id="fx-shop" class="w-full max-w-3xl mb-8 shrink-0">
             <div class="bg-white rounded-3xl border-4 border-amber-200 shadow-lg p-4">
                 <h2 class="text-xl font-black text-amber-600">✨ 擊打特效</h2>
                 <p class="text-xs font-bold text-slate-500 mb-2">打中音符時的爆破動畫。每一種都能先按「預覽」看看再決定；特效很輕量，手機也順。</p>
@@ -785,7 +797,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             ACH_BONUS: { first: 30, rankS: 60, nomiss: 80, combo50: 60, duo: 30, practice: 60, games10: 80, themes3: 100, long: 100, streak3: 100, perfect: 150, fast: 150, games50: 200, themesAll: 300, play30: 100, play60: 150, play90: 300 }
         };
         // 版本號：之後每次優化把這個數字 +1（首頁與診斷資訊都會跟著變）
-        const APP_VERSION = 15;
+        const APP_VERSION = 16;
         // 行動裝置：隨時把「真正看得到的高度」寫進 --app-h（網址列/工具列伸縮、轉向時都會更新）
         { const setH = () => { try { document.documentElement.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px'); } catch (e) {} };
           setH(); window.addEventListener('resize', setH); window.addEventListener('orientationchange', () => { setH(); setTimeout(setH, 300); }); window.addEventListener('pageshow', setH); }
@@ -949,14 +961,14 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         // 全部畫在同一張 2D 畫布上，不新增任何網頁元素；粒子有上限、音符很密時自動減量；省電模式更少、不畫發光與拖尾、不震動
         const FX_LIST = [
             { id: 'classic',  name: '經典星火',  icon: '⭐', price: 0,    desc: '基本款：金色星星與綠色圓點迸開' },
-            { id: 'ring',     name: '光環衝擊',  icon: '⭕', price: 400,  desc: '三圈大光環從金色線炸開，藍色光柱衝上去' },
-            { id: 'confetti', name: '彩紙派對',  icon: '🎊', price: 700,  desc: '幾十片彩紙往上噴再落下，像在開慶祝會' },
-            { id: 'notes',    name: '音符噴泉',  icon: '🎶', price: 1100, desc: '大大的彩色音符一串串飄上天，搖搖晃晃' },
-            { id: 'heart',    name: '愛心泡泡',  icon: '💖', price: 1100, desc: '粉紅愛心和泡泡慢慢飄上來，很可愛' },
-            { id: 'bolt',     name: '閃電風暴',  icon: '⚡', price: 1600, desc: '長長的閃電劈向四面八方，畫面閃一下白光' },
-            { id: 'star',     name: '流星許願',  icon: '🌠', price: 1600, desc: '大星星往外飛、一閃一閃，像在許願' },
-            { id: 'fire',     name: '火焰爆裂',  icon: '🔥', price: 2000, desc: '橘紅火星往上竄，畫面震一下' },
-            { id: 'firework', name: '煙火秀',    icon: '🎆', price: 2200, desc: '火箭咻地飛上去，在空中炸成彩色煙火' }
+            { id: 'ring',     name: '光環衝擊',  icon: '⭕', price: 800,  desc: '三圈大光環從金色線炸開，藍色光柱衝上去' },
+            { id: 'confetti', name: '彩紙派對',  icon: '🎊', price: 1400,  desc: '幾十片彩紙往上噴再落下，像在開慶祝會' },
+            { id: 'notes',    name: '音符噴泉',  icon: '🎶', price: 2200, desc: '大大的彩色音符一串串飄上天，搖搖晃晃' },
+            { id: 'heart',    name: '愛心泡泡',  icon: '💖', price: 2200, desc: '粉紅愛心和泡泡慢慢飄上來，很可愛' },
+            { id: 'bolt',     name: '閃電風暴',  icon: '⚡', price: 3200, desc: '長長的閃電劈向四面八方，畫面閃一下白光' },
+            { id: 'star',     name: '流星許願',  icon: '🌠', price: 3200, desc: '大星星往外飛、一閃一閃，像在許願' },
+            { id: 'fire',     name: '火焰爆裂',  icon: '🔥', price: 4000, desc: '橘紅火星往上竄，畫面震一下' },
+            { id: 'firework', name: '煙火秀',    icon: '🎆', price: 4800, desc: '火箭咻地飛上去，在空中炸成彩色煙火' }
         ];
         const FX_BY = {}; FX_LIST.forEach(f => FX_BY[f.id] = f);
         const fxOwned = id => id === 'classic' || !!(users[currentUser] && users[currentUser].medals && users[currentUser].medals['fx_' + id]);
@@ -2353,6 +2365,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             const o = MEDALS.filter(m => usr.medals[m.id]).map(m => m.emoji).join(''); 
             document.getElementById('home-wallet').textContent = `💰 ${(usr.points || 0).toLocaleString()} 分 ` + o; 
             document.getElementById('shop-balance').textContent = (usr.points || 0).toLocaleString(); 
+            try { const a = curAv(), t = curTi(), ha = document.getElementById('home-avatar'), ht = document.getElementById('home-title'); if (ha) ha.textContent = a ? a.e : '👤'; if (ht) { ht.textContent = t ? t.name : ''; ht.classList.toggle('hidden', !t); } } catch (e) {}
             try { syncThemeToOwner(); } catch (e) {}
         }
         
@@ -2368,9 +2381,9 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 let act = owned ? `<div class="w-full py-2 rounded-xl bg-emerald-100 text-emerald-700 font-black">✅ 已兌換</div>` : (!can ? `<button disabled class="w-full py-2 rounded-xl bg-gray-200 text-gray-500 font-bold opacity-70">差 ${(m.price - (usr.points || 0)).toLocaleString()} 分</button>` : (buyArmed===m.id ? `<button data-medal="${m.id}" class="shop-buy card-shadow w-full py-2 rounded-xl bg-red-500 text-white font-black border-b-4 border-red-700">再次確認</button>` : `<button data-medal="${m.id}" class="shop-buy card-shadow w-full py-2 rounded-xl bg-amber-400 text-amber-950 font-black border-b-4 border-amber-600">兌換</button>`)); 
                 return `<div class="rounded-3xl border-4 ${m.ring} ${m.bg} p-3 text-center shadow-md flex flex-col gap-1"><div class="text-5xl ${owned||can?'':'grayscale opacity-60'}">${m.emoji}</div><div class="font-black ${m.text}">${m.name}</div><div class="font-bold text-amber-600 text-sm">💰 ${m.price.toLocaleString()}</div><div class="w-full h-2 bg-white rounded-full border border-slate-200 mt-1 mb-1"><div class="h-full ${m.bar}" style="width:${pct}%"></div></div>${act}</div>`; 
             }).join(''); 
-            try { renderFxShop(); } catch (e) {}
+            try { renderFxShop(); renderIdShop(); } catch (e) {}
         }
-        function openShop() { buyArmed = null; fxArmed = null; renderShop(); switchView('shop'); }
+        function openShop() { buyArmed = null; fxArmed = null; itemArmed = null; pvTi = pvAv = undefined; renderShop(); switchView('shop'); }
         document.getElementById('shop-items').addEventListener('click', (e) => { const b = e.target.closest('.shop-buy'); if (!b) return; const id = b.dataset.medal, m = MEDALS.find(x => x.id === id); if (!m || users[currentUser].medals[id]) return; if (users[currentUser].points < m.price) { showToast('積分不夠喔！'); return; } if (buyArmed !== id) { buyArmed = id; clearTimeout(buyTimer); buyTimer = setTimeout(()=>{ buyArmed=null; renderShop(); },3000); renderShop(); return; } clearTimeout(buyTimer); buyArmed = null; users[currentUser].points -= m.price; users[currentUser].medals[id] = true; persistUser({ mode: '兌換 ' + m.name, score: 0, combo: 0, perfects: 0 }); updateWalletUI(); renderShop(); showToast(`獲得「${m.name}」`, true); initAudio(); playVictoryFanfare(); });
 
         // ———— 商店：擊打特效（買斷；可預覽；選用的存在帳號的 medals._fx，跟著雲端走）————
@@ -2395,6 +2408,65 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             const kick = () => { if (fxPrevRun) return; fxPrevRun = true; const step = () => { if (views.shop.classList.contains('hidden')) { fxPrevArr.length = 0; fxPrevRun = false; fxShake = 0; cv.style.transform = ''; return; } stepFx(ctx, fxPrevArr, w, h, lo); shakeStep(cv); if (fxPrevArr.length > 0 || fxPrevTimers.length) requestAnimationFrame(step); else { fxPrevRun = false; cv.style.transform = ''; } }; requestAnimationFrame(step); };
             at(0, 0.25, 'perfect'); at(450, 0.5, 'good'); at(900, 0.75, 'perfect'); fxPrevTimers.push(setTimeout(() => { fxPrevTimers = []; }, 2600));
         }
+
+        // ———— 商店：頭銜與頭像（買斷；可試戴；選用的存在帳號的 medals._ti / medals._av，跟著雲端走）————
+        const TITLES = [
+            { id: 't1', name: '節奏新手',   price: 300 },  { id: 't2', name: '小小鼓手',   price: 600 },
+            { id: 't3', name: '音符獵人',   price: 1000 }, { id: 't4', name: '拍子精靈',   price: 1600 },
+            { id: 't5', name: '旋律騎士',   price: 2500 }, { id: 't6', name: '節奏小英雄', price: 3500 },
+            { id: 't7', name: '節拍達人',   price: 5000 }, { id: 't8', name: '音樂魔法師', price: 7500 },
+            { id: 't9', name: '傳說指揮家', price: 12000 }, { id: 't10', name: '節奏之神',  price: 20000 }
+        ];
+        const AVATARS = [
+            { id: 'a1', e: '🐶', price: 300 }, { id: 'a2', e: '🐱', price: 300 }, { id: 'a3', e: '🐰', price: 300 }, { id: 'a4', e: '🐸', price: 300 },
+            { id: 'a5', e: '🦊', price: 600 }, { id: 'a6', e: '🐼', price: 600 }, { id: 'a7', e: '🐨', price: 600 }, { id: 'a8', e: '🐵', price: 600 },
+            { id: 'a9', e: '🦁', price: 1000 }, { id: 'a10', e: '🐯', price: 1000 }, { id: 'a11', e: '🐧', price: 1000 }, { id: 'a12', e: '🦉', price: 1000 },
+            { id: 'a13', e: '🦄', price: 1800 }, { id: 'a14', e: '🐲', price: 1800 }, { id: 'a15', e: '🤖', price: 1800 }, { id: 'a16', e: '👽', price: 1800 },
+            { id: 'a17', e: '🚀', price: 2500 }, { id: 'a18', e: '🌈', price: 2500 }, { id: 'a19', e: '🎸', price: 3000 }, { id: 'a20', e: '👑', price: 5000 }
+        ];
+        const TI_BY = {}; TITLES.forEach(t => TI_BY[t.id] = t); const AV_BY = {}; AVATARS.forEach(a => AV_BY[a.id] = a);
+        const medalsOf = () => (users[currentUser] && users[currentUser].medals) || {};
+        const hasTi = id => !!medalsOf()['ti_' + id], hasAv = id => !!medalsOf()['av_' + id];
+        const curTi = () => { const id = medalsOf()._ti; return id && TI_BY[id] && hasTi(id) ? TI_BY[id] : null; };
+        const curAv = () => { const id = medalsOf()._av; return id && AV_BY[id] && hasAv(id) ? AV_BY[id] : null; };
+        let pvTi, pvAv, itemArmed = null, itemArmTimer = null;   // pvTi / pvAv：試戴中（undefined = 沒試戴，用目前選用的）
+        function renderIdPreview() {
+            const t = pvTi !== undefined ? pvTi : curTi(), a = pvAv !== undefined ? pvAv : curAv(), el = document.getElementById('id-preview'); if (!el) return;
+            el.textContent = (a ? a.e : '👤') + ' ' + (currentUser || '') + (t ? '　【' + t.name + '】' : '') + (pvTi !== undefined || pvAv !== undefined ? '　（試戴中）' : '');
+        }
+        function renderIdShop() {
+            const usr = users[currentUser]; if (!usr) return; const pts = usr.points || 0, cT = curTi(), cA = curAv();
+            const act = (kind, id, price, owned, on) => {
+                if (on) return `<button data-k="${kind}" data-id="${id}" data-do="off" class="fx-act px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-700 font-black text-sm active:scale-95">✔ 使用中（點一下取消）</button>`;
+                if (owned) return `<button data-k="${kind}" data-id="${id}" data-do="use" class="fx-act px-3 py-1.5 rounded-xl bg-sky-500 text-white font-black text-sm border-b-4 border-sky-700 active:scale-95">選用</button>`;
+                if (pts < price) return `<button disabled class="fx-act px-3 py-1.5 rounded-xl bg-gray-200 text-gray-500 font-bold text-sm opacity-80">差 ${(price - pts).toLocaleString()}</button>`;
+                if (itemArmed === kind + ':' + id) return `<button data-k="${kind}" data-id="${id}" data-do="buy" class="fx-act px-3 py-1.5 rounded-xl bg-red-500 text-white font-black text-sm border-b-4 border-red-700 active:scale-95">再次確認</button>`;
+                return `<button data-k="${kind}" data-id="${id}" data-do="buy" class="fx-act px-3 py-1.5 rounded-xl bg-amber-400 text-amber-950 font-black text-sm border-b-4 border-amber-600 active:scale-95">💰 ${price.toLocaleString()}</button>`;
+            };
+            const try1 = (kind, id) => `<button data-k="${kind}" data-id="${id}" data-do="try" class="fx-act px-3 py-1.5 rounded-xl bg-white border-2 border-slate-300 text-slate-700 font-bold text-sm active:scale-95">試戴</button>`;
+            document.getElementById('title-list').innerHTML = TITLES.map(t => { const o = hasTi(t.id), on = !!cT && cT.id === t.id;
+                return `<div class="rounded-2xl border-2 ${on ? 'border-emerald-400' : 'border-amber-200'} bg-white p-2 flex items-center gap-2"><div class="flex-1 min-w-0 font-black text-slate-800 text-sm">【${t.name}】</div><div class="flex gap-1 items-center">${try1('ti', t.id)}${act('ti', t.id, t.price, o, on)}</div></div>`; }).join('');
+            document.getElementById('avatar-list').innerHTML = AVATARS.map(a => { const o = hasAv(a.id), on = !!cA && cA.id === a.id;
+                return `<div class="rounded-2xl border-2 ${on ? 'border-emerald-400' : 'border-amber-200'} bg-white p-2 flex flex-col items-center gap-1"><div class="text-4xl leading-none">${a.e}</div><div class="flex gap-1 flex-wrap justify-center">${try1('av', a.id)}${act('av', a.id, a.price, o, on)}</div></div>`; }).join('');
+            renderIdPreview();
+        }
+        function onIdClick(e) {
+            const b = e.target.closest('button[data-k]'); if (!b || b.disabled) return; const kind = b.dataset.k, id = b.dataset.id, what = b.dataset.do;
+            const usr = users[currentUser]; if (!usr) return; usr.medals = usr.medals || {};
+            const item = kind === 'ti' ? TI_BY[id] : AV_BY[id], label = kind === 'ti' ? '頭銜「' + (item && item.name) + '」' : '頭像 ' + (item && item.e); if (!item) return;
+            const owns = kind === 'ti' ? hasTi(id) : hasAv(id), key = kind === 'ti' ? '_ti' : '_av';
+            if (what === 'try') { if (kind === 'ti') pvTi = item; else pvAv = item; renderIdShop(); return; }
+            if (what === 'off') { delete usr.medals[key]; if (kind === 'ti') pvTi = undefined; else pvAv = undefined; persistUser(); updateWalletUI(); renderIdShop(); showToast('已取消' + label, true); return; }
+            if (what === 'use') { if (!owns) return; usr.medals[key] = id; if (kind === 'ti') pvTi = undefined; else pvAv = undefined; persistUser(); updateWalletUI(); renderIdShop(); showToast('已換成' + label, true); return; }
+            if (what === 'buy') {
+                if (owns) return; if ((usr.points || 0) < item.price) { showToast('積分不夠喔！'); renderIdShop(); return; }
+                if (itemArmed !== kind + ':' + id) { itemArmed = kind + ':' + id; clearTimeout(itemArmTimer); itemArmTimer = setTimeout(() => { itemArmed = null; renderIdShop(); }, 3000); renderIdShop(); return; }
+                clearTimeout(itemArmTimer); itemArmed = null; usr.points -= item.price; usr.medals[kind + '_' + id] = true; usr.medals[key] = id; if (kind === 'ti') pvTi = undefined; else pvAv = undefined;
+                persistUser({ mode: '解鎖' + (kind === 'ti' ? '頭銜 ' + item.name : '頭像 ' + item.e), score: 0, combo: 0, perfects: 0 });
+                updateWalletUI(); renderShop(); showToast('解鎖' + label + '並套用！', true); try { initAudio(); playVictoryFanfare(); } catch (err) {}
+            }
+        }
+        document.getElementById('title-list').addEventListener('click', onIdClick); document.getElementById('avatar-list').addEventListener('click', onIdClick);
         document.getElementById('fx-list').addEventListener('click', (e) => {
             const b = e.target.closest('button[data-fx]'); if (!b || b.disabled) return; const id = b.dataset.fx, f = FX_BY[id], what = b.dataset.do; if (!f) return;
             if (what === 'prev') { fxPreview(id); return; }
