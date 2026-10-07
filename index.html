@@ -241,6 +241,22 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         [style*="max-height:92vh"] { max-height: calc(var(--app-h, 100dvh) * 0.92) !important; }
         body { font-family: 'Fredoka', sans-serif; background-color: #f8fafc; touch-action: manipulation; user-select: none; -webkit-user-select: none; overflow: hidden; }
         .font-music { font-family: 'Noto Music', sans-serif; }
+        #home-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+        #home-bg.off{display:none}
+        .hb-scene{position:absolute;inset:-12%;opacity:0;transition:opacity 3.2s ease-in-out;will-change:opacity}
+        .hb-scene.on{opacity:.3}
+        .hb-s0{background:radial-gradient(circle at 18% 28%,var(--ac,#38bdf8) 0,transparent 38%),radial-gradient(circle at 84% 76%,var(--ac2,#f472b6) 0,transparent 40%)}
+        .hb-s1{background:radial-gradient(circle at 82% 22%,var(--ac3,#fbbf24) 0,transparent 38%),radial-gradient(circle at 22% 80%,var(--ac,#38bdf8) 0,transparent 42%)}
+        .hb-s2{background:radial-gradient(circle at 50% 46%,var(--ac2,#f472b6) 0,transparent 36%),radial-gradient(circle at 10% 10%,var(--ac3,#fbbf24) 0,transparent 34%)}
+        body:not(.lowfx) .hb-scene.on{animation:hbDrift 18s ease-in-out infinite alternate}
+        @keyframes hbDrift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.12)}}
+        .hb-note{position:absolute;bottom:-12%;color:var(--ac,#0ea5e9);opacity:0;animation:hbRise linear infinite;will-change:transform,opacity;user-select:none}
+        @keyframes hbRise{0%{transform:translate3d(0,0,0) rotate(-12deg);opacity:0}10%{opacity:.38}85%{opacity:.3}100%{transform:translate3d(var(--sw,30px),-118vh,0) rotate(24deg);opacity:0}}
+        #hb-eq{position:absolute;left:0;right:0;bottom:0;height:90px;display:flex;align-items:flex-end;justify-content:space-around;gap:2px;padding:0 2%;opacity:.2}
+        #hb-eq i{flex:1;max-width:26px;height:100%;border-radius:6px 6px 0 0;background:linear-gradient(to top,var(--ac,#38bdf8),var(--ac2,#f472b6));transform-origin:bottom;animation:hbEq ease-in-out infinite alternate}
+        @keyframes hbEq{from{transform:scaleY(.12)}to{transform:scaleY(1)}}
+        body.lowfx #hb-eq{display:none}
+        @media (prefers-reduced-motion: reduce){ .hb-note,#hb-eq i,.hb-scene.on{animation:none !important} .hb-note{display:none} }
         .bg-pattern { background-image: radial-gradient(#cbd5e1 2px, transparent 2px); background-size: 30px 30px; }
         .card-shadow { box-shadow: 0 6px 0 rgba(0,0,0,0.15); transition: transform 0.1s ease, box-shadow 0.1s ease; }
         .card-shadow:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
@@ -277,6 +293,17 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         /* ================= 🎨 主題系統（經典 = 不套用；其餘 7 種可用積分解鎖） ================= */
         /* 主題選單卡片 / 難度標籤 */
+        #start-box { background:#0f172a !important; color:#fff !important; border-color:#475569 !important; }
+        #quest-body .qbar, #ach-list .ach-bar { }
+        .note-gold, body[data-theme] .falling-note.note-gold { background: linear-gradient(180deg,#fde047,#f59e0b) !important; color:#78350f !important; border-color:#b45309 !important; box-shadow: 0 0 18px #fde047, 0 6px 12px rgba(0,0,0,.3) !important; animation: goldPulse .6s ease-in-out infinite alternate; }
+        .note-gold::after { content:'★'; position:absolute; right:6px; top:-2px; font-size:.9rem; color:#fff; text-shadow:0 0 6px #b45309; }
+        @keyframes goldPulse { from { filter: brightness(1); } to { filter: brightness(1.25); } }
+        body.lowfx .note-gold { animation: none; }
+        .note-trap, body[data-theme] .falling-note.note-trap { background:#7f1d1d !important; color:#fff !important; border:3px dashed #fca5a5 !important; box-shadow: 0 0 14px rgba(239,68,68,.7), 0 6px 12px rgba(0,0,0,.3) !important; }
+        #mascot { font-size: 2rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+        .coop-btn { background:#e0f2fe; color:#0369a1; border:2px solid #7dd3fc; border-radius:.75rem; padding:.4rem .5rem; font-weight:700; font-size:.85rem; white-space:nowrap; }
+        .coop-btn.on { background:#0ea5e9 !important; color:#fff !important; border-color:#0369a1 !important; }
+        body[data-theme]:not([data-theme="classic"]) .coop-btn { background: var(--pn2); color: var(--tx); border-color: var(--bd); }
         .diff-tag { display:inline-block; font-size:.68rem; font-weight:900; line-height:1.2; padding:.05rem .45rem; border-radius:999px; border:2px solid; white-space:nowrap; }
         .diff-easy { background:#dcfce7; color:#166534; border-color:#4ade80; } .diff-mid { background:#fef3c7; color:#92400e; border-color:#fbbf24; } .diff-hard { background:#ffe4e6; color:#9f1239; border-color:#fb7185; }
         .theme-card { display:flex; align-items:center; gap:.6rem; padding:.5rem .6rem; border-radius:1rem; border:2px solid #bae6fd; background:#f0f9ff; }
@@ -325,15 +352,15 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         body[data-theme]:not([data-theme="classic"]) { background: var(--bgi) !important; background-attachment: fixed !important; color: var(--tx); font-family: var(--ff); }
         body[data-theme]:not([data-theme="classic"]) .bg-pattern { background: transparent !important; }
-        body[data-theme]:not([data-theme="classic"]) :is(#home-view,#editor-view,#shop-view,#settings-modal,#audio-modal,#practice-modal,#ach-modal,#lb-modal,#theme-modal,#login-modal,#result-modal) { color: var(--tx); }
+        body[data-theme]:not([data-theme="classic"]) :is(#home-view,#editor-view,#shop-view,#settings-modal,#audio-modal,#practice-modal,#ach-modal,#quest-modal,#lb-modal,#theme-modal,#login-modal,#result-modal) { color: var(--tx); }
 
         /* 白底卡片 → 主題面板 */
         body[data-theme]:not([data-theme="classic"]) :is(#home-view .bg-white\/90, #home-view .bg-amber-50, #editor-view .bg-white, #editor-view .bg-white\/90, #editor-view .bg-sky-50, #editor-view .bg-amber-50,
-               #shop-view .bg-white, #settings-modal .bg-white, #audio-modal .bg-white, #practice-modal .bg-white, #ach-modal .bg-white, #lb-modal .bg-white, #theme-modal .bg-white, #login-modal .bg-white, #result-box, #result-box .bg-amber-50, #result-box .bg-sky-50, #result-box .bg-emerald-50, #result-box .bg-violet-50,
+               #shop-view .bg-white, #settings-modal .bg-white, #audio-modal .bg-white, #practice-modal .bg-white, #ach-modal .bg-white, #quest-modal .bg-white, #quest-modal .bg-violet-50, #quest-modal .bg-sky-50, #lb-modal .bg-white, #theme-modal .bg-white, #login-modal .bg-white, #result-box, #result-box .bg-amber-50, #result-box .bg-sky-50, #result-box .bg-emerald-50, #result-box .bg-violet-50,
                #shop-items > div, #input-username, #settings-list > *) {
             background: var(--pn) !important; border-color: var(--bd) !important; color: var(--tx) !important; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
         }
-        body[data-theme]:not([data-theme="classic"]) :is(#home-view,#editor-view,#shop-view,#settings-modal,#audio-modal,#practice-modal,#ach-modal,#lb-modal,#theme-modal,#login-modal,#result-modal) :is([class*="text-sky-"],[class*="text-slate-"],[class*="text-gray-"],[class*="text-blue-"],[class*="text-amber-"],[class*="text-emerald-"],[class*="text-violet-"],[class*="text-purple-"],[class*="text-orange-"],[class*="text-yellow-"]) { color: var(--tx) !important; }
+        body[data-theme]:not([data-theme="classic"]) :is(#home-view,#editor-view,#shop-view,#settings-modal,#audio-modal,#practice-modal,#ach-modal,#quest-modal,#lb-modal,#theme-modal,#login-modal,#result-modal) :is([class*="text-sky-"],[class*="text-slate-"],[class*="text-gray-"],[class*="text-blue-"],[class*="text-amber-"],[class*="text-emerald-"],[class*="text-violet-"],[class*="text-purple-"],[class*="text-orange-"],[class*="text-yellow-"]) { color: var(--tx) !important; }
         body[data-theme]:not([data-theme="classic"])[data-theme] :is(h1,h2) { color: var(--ac) !important; text-shadow: var(--ts); }
         body[data-theme]:not([data-theme="classic"])[data-theme] :is(#display-username, .speed-bpm) { color: var(--ac2) !important; }
         body[data-theme]:not([data-theme="classic"])[data-theme] :is(#home-wallet, #home-wallet *, #shop-balance, #theme-balance, #final-score, #final-rank, #home-shop-points) { color: var(--ac3) !important; }
@@ -344,7 +371,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         body[data-theme]:not([data-theme="classic"]) .players-btn.players-active { background: var(--ac); color: var(--on-ac); border-color: var(--ac); }
 
         /* 次要按鈕 */
-        body[data-theme]:not([data-theme="classic"]) :is(#btn-open-shop, #btn-result-shop, #btn-play-again, #btn-open-settings, #btn-open-audio, #btn-open-practice, #btn-open-ach, #btn-open-lb, #btn-back-home, #btn-shop-back, #btn-clear, #btn-random-editor, .speed-down, .speed-up, #btn-switch-user) {
+        body[data-theme]:not([data-theme="classic"]) :is(#btn-open-shop, #btn-open-quest, #home-rank, #btn-result-shop, #btn-play-again, #btn-open-settings, #btn-open-audio, #btn-open-practice, #btn-open-ach, #btn-open-lb, #btn-back-home, #btn-shop-back, #btn-clear, #btn-random-editor, .speed-down, .speed-up, #btn-switch-user) {
             background: var(--pn2) !important; border-color: var(--bd) !important; color: var(--tx) !important;
         }
         /* 主要按鈕 */
@@ -372,7 +399,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         /* 商店獎章卡 / 結算視窗 */
         body[data-theme]:not([data-theme="classic"]) #result-box { box-shadow: 0 0 50px var(--glow) !important; border-color: var(--ac) !important; }
         body[data-theme]:not([data-theme="classic"])[data-theme] #result-title, body[data-theme]:not([data-theme="classic"])[data-theme] #result-difficulty-text { color: var(--tx) !important; }
-        body[data-theme="arcade"] :is(#home-view,#editor-view,#shop-view,#settings-modal,#audio-modal,#practice-modal,#ach-modal,#lb-modal,#theme-modal,#login-modal,#result-modal,#game-view,#toast) *:not(#btn-exit-game):not(#btn-pause-game) { border-radius: 0 !important; }
+        body[data-theme="arcade"] :is(#home-view,#editor-view,#shop-view,#settings-modal,#audio-modal,#practice-modal,#ach-modal,#quest-modal,#lb-modal,#theme-modal,#login-modal,#result-modal,#game-view,#toast) *:not(#btn-exit-game):not(#btn-pause-game) { border-radius: 0 !important; }
         body[data-theme="arcade"] :is(#result-box,#login-box) { border-radius: 0 !important; }
 
         /* 遊戲畫面 */
@@ -482,6 +509,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 </style>
 </head>
 <body class="w-screen h-screen flex flex-col bg-pattern relative">
+    <div id="home-bg" aria-hidden="true"><div class="hb-scene hb-s0 on"></div><div class="hb-scene hb-s1"></div><div class="hb-scene hb-s2"></div><div id="hb-notes"></div><div id="hb-eq"></div></div>
     <script>try { var __t = localStorage.getItem("rhythmGame.theme.v1"); document.body.dataset.theme = ["classic","neon","arcade","aurora","bossa","jrock","kpop","chinese"].indexOf(__t) >= 0 ? __t : "classic"; } catch (e) { document.body.dataset.theme = "classic"; }</script>
 
     <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[110] bg-rose-500 text-white font-bold px-6 py-3 rounded-2xl shadow-xl transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none flex items-center gap-2">
@@ -503,12 +531,13 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         <header class="text-center mb-6 mt-auto">
             <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold text-sky-600 drop-shadow-lg mb-3">✨ 動感節拍組合器 ✨</h1>
             <p class="text-base md:text-xl text-sky-700 font-semibold bg-white/90 px-6 py-2 rounded-full shadow-sm inline-block">🎵 聽旋律、抓準拍點！支援手機觸控與滑鼠打擊</p>
-            <div class="mt-1"><span id="app-version" class="text-xs font-bold text-sky-700/80 bg-white/70 px-3 py-0.5 rounded-full">版本 16</span></div>
+            <div class="mt-1"><span id="app-version" class="text-xs font-bold text-sky-700/80 bg-white/70 px-3 py-0.5 rounded-full">版本 19</span></div>
             <div class="mt-3 flex flex-wrap justify-center items-center gap-2">
                 <div class="inline-flex items-center gap-2 bg-white/90 rounded-full px-4 py-1.5 shadow-sm font-bold border-2 border-sky-200">
                     <span class="text-sky-700 text-sm md:text-base"><span id="home-avatar">👤</span> 學生: <span id="display-username" class="text-sky-600 font-black">---</span><span id="home-title" class="hidden ml-1 text-xs font-black text-amber-700 bg-amber-100 border border-amber-300 rounded-full px-2 py-0.5 align-middle"></span></span>
                     <button id="btn-switch-user" class="bg-sky-100 text-sky-600 text-xs px-2 py-1 rounded-lg hover:bg-sky-200 active:scale-95 transition-transform">切換</button>
                 </div>
+                <button id="home-rank" type="button" class="inline-flex items-center gap-1 bg-violet-50 rounded-full px-3 py-1.5 shadow-sm font-black text-violet-700 text-sm md:text-base border-2 border-violet-200 active:scale-95 transition-transform">🌱 新芽</button>
                 <div id="home-wallet" class="inline-flex items-center gap-2 bg-amber-50 rounded-full px-4 py-1.5 shadow-sm font-bold text-amber-600 text-sm md:text-base border-2 border-amber-200"></div>
                 <button id="btn-open-audio" class="bg-white/90 rounded-full w-10 h-10 border-2 border-sky-200 shadow-sm hover:bg-sky-50 text-lg font-bold active:scale-95 transition-transform flex items-center justify-center" title="音量・延遲校正・診斷" aria-label="音訊與診斷">🔊</button>
             </div>
@@ -520,6 +549,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                     <span class="text-xs font-bold text-sky-700 mr-1">🎮</span>
                     <button type="button" class="players-btn text-sm px-2" data-players="1">單人</button>
                     <button type="button" class="players-btn text-sm px-2" data-players="2">雙人</button>
+                    <button type="button" id="btn-coop" class="coop-btn hidden" title="兩人共用連擊、一起拿成績">🤝 合作</button>
                 </div>
                 <button id="btn-open-settings" class="bg-white/90 rounded-2xl border-2 border-slate-300 px-3 py-1.5 shadow-sm hover:bg-slate-50 text-slate-700 font-bold active:scale-95 transition-transform flex items-center gap-1">⚙️ <span class="text-sm">音符設定</span></button>
             </div>
@@ -536,15 +566,11 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 <button id="btn-open-ach" class="card-shadow bg-white/90 rounded-2xl border-2 border-amber-300 px-2 py-2 shadow-sm font-bold text-amber-700 flex items-center justify-center gap-1 active:scale-95 transition-transform text-sm whitespace-nowrap">🏅 成就</button>
                 <button id="btn-open-lb" class="card-shadow bg-white/90 rounded-2xl border-2 border-violet-300 px-2 py-2 shadow-sm font-bold text-violet-700 flex items-center justify-center gap-1 active:scale-95 transition-transform text-sm whitespace-nowrap">🏆 排行榜</button>
             </div>
-            <button id="btn-mode-editor" class="card-shadow bg-blue-500 hover:bg-blue-400 text-white font-bold text-2xl py-4 px-4 rounded-3xl border-b-8 border-blue-700 flex flex-col items-center">
+            <button id="btn-open-start" class="card-shadow bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-black text-3xl py-5 px-4 rounded-3xl border-b-8 border-blue-800 flex flex-col items-center active:scale-95 transition-transform"><span>🎮 開始挑戰</span><span class="text-xs text-blue-100 mt-1 font-bold">選難度 ・ 依設定隨機出題</span></button>
+            <button id="btn-open-quest" class="card-shadow bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-lg py-2.5 px-4 rounded-2xl border-2 border-emerald-300 flex justify-between items-center"><span>📅 任務・段位</span> <span class="text-sm bg-white/80 px-3 py-1 rounded-lg" id="home-quest-prog">今日 0/3</span></button>
+            <button id="btn-mode-editor" class="card-shadow bg-blue-500 hover:bg-blue-400 text-white font-bold text-lg py-2.5 px-4 rounded-2xl border-b-6 border-blue-700 flex flex-col items-center">
                 <span>✏️ 自訂節奏譜</span><span class="text-xs text-blue-200 mt-1 opacity-90">(創作 4 小節樂曲 ・ 不列入積分)</span>
             </button>
-            <div class="h-1 w-full bg-slate-300 rounded-full my-1 relative"><span class="absolute left-1/2 -translate-x-1/2 -top-3 bg-slate-50 px-3 text-slate-500 font-bold text-sm">或快速挑戰 (依設定隨機出題)</span></div>
-            <button class="diff-btn card-shadow bg-green-400 hover:bg-green-300 text-green-950 font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-green-600 flex justify-between items-center" data-measures="6"><span>🌱 初階模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">6 小節</span></button>
-            <button class="diff-btn card-shadow bg-orange-400 hover:bg-orange-300 text-orange-950 font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-orange-600 flex justify-between items-center" data-measures="12"><span>🔥 中階模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">12 小節</span></button>
-            <button class="diff-btn card-shadow bg-purple-500 hover:bg-purple-400 text-white font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-purple-700 flex justify-between items-center" data-measures="18"><span>⚡ 高階模式</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">18 小節</span></button>
-            <button class="diff-btn card-shadow bg-rose-500 hover:bg-rose-400 text-white font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-rose-700 flex justify-between items-center" data-measures="24"><span>💎 大師模式</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">24 小節</span></button>
-            <button class="diff-btn card-shadow bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-yellow-600 flex justify-between items-center" data-measures="30"><span>👑 傳奇模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">30 小節</span></button>
             <button id="btn-open-shop" class="card-shadow bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold text-xl py-3 px-4 rounded-2xl border-2 border-amber-300 flex justify-between items-center mt-2"><span>🏪 兌換商店</span> <span class="text-sm bg-white/70 px-3 py-1 rounded-lg" id="home-shop-points">0 分</span></button>
         </div>
     </div>
@@ -554,8 +580,59 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative border-4 border-slate-200">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">⚙️ 隨機題庫音符設定</h2>
             <p class="text-sm text-slate-500 mb-4 font-bold">勾選您希望在「快速挑戰」中出現的音符種類。</p>
-            <div id="settings-list" class="flex flex-col gap-3 max-h-[50vh] overflow-y-auto pr-2 mb-4"></div>
+            <div id="settings-list" class="flex flex-col gap-3 max-h-[34vh] overflow-y-auto pr-2 mb-3"></div>
+            <div class="flex flex-col gap-1.5 mb-3 text-sm font-bold text-slate-700">
+                <label class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200"><input type="checkbox" id="opt-special" class="w-5 h-5"> ✨ 特殊音符（金色加倍、炸彈別按）</label>
+                <label class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200"><input type="checkbox" id="opt-mascot" class="w-5 h-5"> 🐱 吉祥物（跟著節拍跳舞）</label>
+                <label class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200"><input type="checkbox" id="opt-dyn" class="w-5 h-5"> 🎶 動態配樂（連擊越高越豐富）</label>
+                <label class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200"><input type="checkbox" id="opt-bg" class="w-5 h-5"> 🎞 首頁動畫背景（手機自動簡化）</label>
+            </div>
             <button id="btn-close-settings" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg py-3 rounded-xl shadow-md transition-transform active:scale-95 border-b-4 border-sky-700">完成設定</button>
+        </div>
+    </div>
+
+
+    <!-- 難度選擇彈窗（主畫面只放一顆「開始挑戰」，點進來再選難度）-->
+    <div id="start-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex-col items-center justify-center p-4">
+        <div id="start-box" class="bg-slate-900 rounded-3xl p-4 w-full max-w-sm shadow-2xl border-4 border-slate-600 flex flex-col gap-3 overflow-y-auto" style="max-height:92vh">
+            <div class="flex items-center justify-between gap-2"><h2 class="text-2xl font-black text-white">🎮 選擇難度</h2><span id="start-info" class="text-xs font-bold text-sky-200 text-right"></span></div>
+            <button class="diff-btn card-shadow bg-green-400 hover:bg-green-300 text-green-950 font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-green-600 flex justify-between items-center" data-measures="6"><span>🌱 初階模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">6 小節</span></button>
+            <button class="diff-btn card-shadow bg-orange-400 hover:bg-orange-300 text-orange-950 font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-orange-600 flex justify-between items-center" data-measures="12"><span>🔥 中階模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">12 小節</span></button>
+            <button class="diff-btn card-shadow bg-purple-500 hover:bg-purple-400 text-white font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-purple-700 flex justify-between items-center" data-measures="18"><span>⚡ 高階模式</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">18 小節</span></button>
+            <button class="diff-btn card-shadow bg-rose-500 hover:bg-rose-400 text-white font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-rose-700 flex justify-between items-center" data-measures="24"><span>💎 大師模式</span> <span class="text-sm bg-white/30 px-3 py-1 rounded-lg">24 小節</span></button>
+            <button class="diff-btn card-shadow bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-bold text-xl py-3 px-4 rounded-2xl border-b-6 border-yellow-600 flex justify-between items-center" data-measures="30"><span>👑 傳奇模式</span> <span class="text-sm bg-white/40 px-3 py-1 rounded-lg">30 小節</span></button>
+            <button id="btn-open-songs" type="button" class="w-full rounded-2xl border-2 border-emerald-400 bg-emerald-950 text-emerald-100 font-black px-3 py-2 text-left active:scale-95 transition-transform"><div>🎼 歌曲模式（兒歌）</div><div class="text-xs font-bold opacity-80">小星星、快樂頌…跟著真的旋律打節奏</div></button>
+            <button id="boss-toggle" type="button" class="w-full rounded-2xl border-2 border-fuchsia-400 bg-fuchsia-950 text-fuchsia-100 font-black px-3 py-2 text-left active:scale-95 transition-transform"></button>
+            <button id="btn-close-start" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg py-2.5 rounded-xl shadow-md active:scale-95 border-b-4 border-slate-900">返回</button>
+        </div>
+    </div>
+
+    <!-- 歌曲模式彈窗 -->
+    <div id="song-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl relative border-4 border-slate-200 flex flex-col" style="max-height:92vh">
+            <h2 class="text-2xl font-bold text-slate-800 mb-1">🎼 歌曲模式</h2>
+            <p class="text-xs font-bold text-slate-500 mb-2">固定的旋律、固定的譜，打完拿 ★。速度由歌曲決定；可以單人、雙人對戰或合作。</p>
+            <div id="song-list" class="flex flex-col gap-2 overflow-y-auto pr-1 mb-3"></div>
+            <button id="btn-close-songs" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg py-3 rounded-xl shadow-md active:scale-95 border-b-4 border-sky-700">關閉</button>
+        </div>
+    </div>
+
+    <!-- 任務・段位彈窗 -->
+    <div id="quest-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl relative border-4 border-slate-200 flex flex-col" style="max-height:92vh">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">📅 任務・段位</h2>
+            <div id="quest-body" class="flex flex-col gap-3 overflow-y-auto pr-1 mb-3"></div>
+            <button id="btn-close-quest" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg py-3 rounded-xl shadow-md active:scale-95 border-b-4 border-sky-700">關閉</button>
+        </div>
+    </div>
+
+    <!-- 老師儀表板 -->
+    <div id="teacher-modal" class="fixed inset-0 bg-black/70 z-[110] hidden flex-col items-center justify-center p-3">
+        <div class="bg-white text-slate-800 rounded-3xl p-4 w-full max-w-3xl shadow-2xl relative border-4 border-slate-200 flex flex-col" style="max-height:94vh">
+            <div class="flex items-center justify-between mb-2"><h2 class="text-xl font-black">👩‍🏫 老師儀表板</h2><button id="btn-close-teacher" type="button" class="text-2xl font-black px-2 text-slate-500">✕</button></div>
+            <div id="t-login" class="flex gap-2 mb-2"><input id="t-pin" type="password" inputmode="numeric" placeholder="老師密碼 (TEACHER_PIN)" class="flex-1 border-2 border-slate-300 rounded-xl px-3 py-2 font-bold bg-white text-slate-800"><button id="t-go" type="button" class="bg-sky-500 text-white font-black px-4 rounded-xl border-b-4 border-sky-700 active:scale-95">查看</button></div>
+            <div id="t-note" class="text-xs font-bold text-slate-500 mb-2"></div>
+            <div id="t-body" class="overflow-y-auto flex-1"></div>
         </div>
     </div>
 
@@ -573,12 +650,14 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
     <div id="lb-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex-col items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl relative border-4 border-slate-200 flex flex-col" style="max-height:90vh">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">🏆 排行榜</h2>
+            <div class="flex gap-1 mb-2"><button type="button" class="lb-k opt-btn flex-1" data-k="score">🎯 成績</button><button type="button" class="lb-k opt-btn flex-1" data-k="rank">🎖 段位</button><button type="button" class="lb-k opt-btn flex-1" data-k="pts">💰 積分</button></div>
+            <label id="lb-mine-wrap" class="hidden flex items-center gap-2 text-xs font-bold text-slate-600 mb-2"><input type="checkbox" id="lb-mine" class="w-4 h-4"> 只看我的班級</label>
             <div class="flex gap-1 mb-2 flex-wrap"><button type="button" class="lb-m opt-btn flex-1" data-v="6">6</button><button type="button" class="lb-m opt-btn flex-1" data-v="12">12</button><button type="button" class="lb-m opt-btn flex-1" data-v="18">18</button><button type="button" class="lb-m opt-btn flex-1" data-v="24">24</button><button type="button" class="lb-m opt-btn flex-1" data-v="30">30</button><span class="text-xs font-bold text-slate-400 w-full -mt-0.5">↑ 小節數</span></div>
             <div class="flex gap-2 mb-2"><button type="button" class="lb-t opt-btn flex-1" data-v="easy">簡單</button><button type="button" class="lb-t opt-btn flex-1" data-v="mid">中等</button><button type="button" class="lb-t opt-btn flex-1" data-v="hard">難</button></div>
             <p id="lb-note" class="text-xs font-bold text-slate-500 mb-2"></p>
             <div id="lb-list" class="flex flex-col gap-1 overflow-y-auto pr-1 mb-3"></div>
             <div class="flex gap-2"><button id="btn-close-lb" class="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg py-3 rounded-xl shadow-md active:scale-95 border-b-4 border-sky-700">關閉</button><button id="btn-lb-refresh" class="opt-btn px-4">🔄</button></div>
-            <p class="text-[11px] font-bold text-slate-400 mt-2">難度＝速度(BPM)：≤96 簡單、≤128 中等、其餘為難。僅單人的一般挑戰會上榜。</p>
+            <p id="lb-foot" class="text-[11px] font-bold text-slate-400 mt-2">難度＝速度(BPM)：≤96 簡單、≤128 中等、其餘為難。僅單人的一般挑戰會上榜。</p>
         </div>
     </div>
 
@@ -730,6 +809,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
     <div id="game-view" class="absolute inset-0 w-full h-full flex-col bg-gray-900 z-30 hidden overflow-hidden select-none">
         <div class="absolute top-2 right-4 left-4 z-[80] flex justify-between items-start pointer-events-none">
             <button id="btn-exit-game" type="button" class="w-10 h-10 rounded-full bg-gray-700/90 hover:bg-red-500 text-white font-black text-xl border-2 border-gray-500 flex items-center justify-center active:scale-90 transition-colors pointer-events-auto shadow-lg">✕</button>
+            <div id="mascot" class="pointer-events-none select-none" aria-hidden="true"><span id="mascot-face">😺</span></div>
             <div class="flex gap-2 pointer-events-none"><button id="btn-mute-game" type="button" class="w-10 h-10 rounded-full bg-gray-700/90 hover:bg-gray-600 text-white text-lg border-2 border-gray-500 flex items-center justify-center active:scale-90 pointer-events-auto shadow-lg">🔊</button><button id="btn-pause-game" type="button" class="w-10 h-10 rounded-full bg-sky-600/90 hover:bg-sky-500 text-white font-black text-xl border-2 border-sky-400 flex items-center justify-center active:scale-90 transition-colors pointer-events-auto shadow-lg">⏸</button></div>
         </div>
         <div id="players-wrap" class="w-full h-full flex"></div>
@@ -773,6 +853,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
             <div id="result-ach" class="hidden mb-2 flex flex-col gap-1"></div>
             <div id="result-points" class="text-sm font-bold text-amber-700 bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-2 mb-4"></div>
+            <div id="result-advice" class="hidden text-sm font-bold text-sky-800 bg-sky-50 border-2 border-sky-200 rounded-xl px-3 py-2 mb-3 text-left"><span id="advice-text"></span><button id="btn-advice" type="button" class="hidden ml-2 px-3 py-1 rounded-lg bg-sky-500 text-white font-black text-xs border-b-2 border-sky-700 active:scale-95">套用</button></div>
             <button id="btn-retry" class="w-full card-shadow bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xl py-3 rounded-2xl border-b-4 border-emerald-700 transition-colors mb-2">🔁 再來一次</button>
             <div class="grid grid-cols-2 gap-2">
                 <button id="btn-result-shop" class="card-shadow bg-amber-400 text-amber-950 font-bold py-2 rounded-2xl border-b-4 border-amber-600">🏪 商店</button>
@@ -794,10 +875,20 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             MODE_POINTS: { 6: 500, 12: 750, 18: 1000, 24: 1250, 30: 1500 },   // 各模式「滿分(100%)」可得的積分
             GAMES_GOAL: 60,                    // 「老手」要累計的場數
             PLAY_MINUTES: [30, 60, 90],        // 「累計演奏時間」三個成就的分鐘數
-            ACH_BONUS: { first: 30, rankS: 60, nomiss: 80, combo50: 60, duo: 30, practice: 60, games10: 80, themes3: 100, long: 100, streak3: 100, perfect: 150, fast: 150, games50: 200, themesAll: 300, play30: 100, play60: 150, play90: 300 }
+            ACH_BONUS: { first: 30, rankS: 60, nomiss: 80, combo50: 60, duo: 30, practice: 60, games10: 80, themes3: 100, long: 100, streak3: 100, perfect: 150, fast: 150, games50: 200, themesAll: 300, play30: 100, play60: 150, play90: 300,
+                fast168: 250, boss1: 150, bossA: 400, fullcombo: 200, perfect12: 300, streakS3: 250, dq5: 200, dq20: 500, wk1: 150, wk95: 300, rankGold: 200, rankDia: 400, games100: 300, themesAllA: 500, perf1000: 300, combo100: 200,
+                gold5: 120, trap8: 150, streak30: 200, coop85: 150, song1: 100, songAll: 400 },
+            CLASS_GOAL: 10000,                 // 班級挑戰：全班累計 Perfect 數
+            CLASS_GOAL_BONUS: 500,             // 達標時每位成員得到的積分（另送頭銜「全班一心」）
+            CLASS_MIN_MEMBERS: 3,              // 一個班至少要有幾位同學登入過，班級挑戰與組隊週賽才算數
+            BOSS_MULT: 1.5,                    // 魔王模式的積分倍率
+            BOSS_UNLOCK_GAMES: 5,              // 累計完成幾場挑戰後解鎖魔王模式
+            DQ_ALL_BONUS: 100,                 // 每日任務三項全完成的額外獎勵
+            WK_TIERS: [[70, 100], [85, 200], [95, 350]],   // 每週挑戰：[成績門檻%, 獎勵積分]
+            RANKS: [[0, '新芽', '🌱'], [1500, '銅牌', '🥉'], [5000, '銀牌', '🥈'], [12000, '金牌', '🥇'], [25000, '白金', '💠'], [45000, '鑽石', '💎'], [70000, '大師', '🔮'], [100000, '傳說', '👑']]   // [累計積分門檻, 名稱, 圖示]；除了最後一階，每階分 III、II、I 三小段
         };
         // 版本號：之後每次優化把這個數字 +1（首頁與診斷資訊都會跟著變）
-        const APP_VERSION = 16;
+        const APP_VERSION = 19;
         // 行動裝置：隨時把「真正看得到的高度」寫進 --app-h（網址列/工具列伸縮、轉向時都會更新）
         { const setH = () => { try { document.documentElement.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px'); } catch (e) {} };
           setH(); window.addEventListener('resize', setH); window.addEventListener('orientationchange', () => { setH(); setTimeout(setH, 300); }); window.addEventListener('pageshow', setH); }
@@ -812,7 +903,6 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             'quarter': { symbol: '♩', label: 'Ta', beats: 1, class: 'note-quarter' },
             'eighth': { symbol: '♫', label: 'Ti-Ti', beats: 1, class: 'note-eighth' },
             'sixteenth': { symbol: '𝅘𝅥𝅯', label: 'Tiri-Tiri', beats: 1, class: 'note-sixteenth' },
-            'thirtysecond': { symbol: '𝅘𝅥𝅰', label: 'Ti-di-di', beats: 1, class: 'note-thirtysecond' },
             'rest': { symbol: '𝄽', label: 'Shh', beats: 1, class: 'note-rest' }
         };
         const deckKeys = Object.keys(noteData);
@@ -919,7 +1009,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         const SETTINGS_KEY = 'rhythmGame.settings.v2';
         let activeNoteTypes = ['quarter', 'eighth', 'half', 'rest']; 
-        function loadSettings() { try { const s = localStorage.getItem(SETTINGS_KEY); if (s) activeNoteTypes = JSON.parse(s); } catch(e){} }
+        function loadSettings() { try { const s = localStorage.getItem(SETTINGS_KEY); if (s) { const a = JSON.parse(s); if (Array.isArray(a)) { const f = a.filter(k => noteData[k]); if (f.length) activeNoteTypes = f; } } } catch(e){} }
         function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(activeNoteTypes)); } catch(e){} }
         loadSettings();
 
@@ -938,18 +1028,18 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             settingsList.insertAdjacentHTML('beforeend', html);
         });
 
-        document.getElementById('btn-open-settings').addEventListener('click', () => { document.getElementById('settings-modal').classList.remove('hidden'); document.getElementById('settings-modal').classList.add('flex'); });
-        document.getElementById('btn-close-settings').addEventListener('click', () => { const checkboxes = document.querySelectorAll('.toggle-checkbox'); let newActive = []; checkboxes.forEach(cb => { if(cb.checked) newActive.push(cb.id.replace('toggle_', '')); }); if(newActive.length === 0) { showToast('至少需要勾選一種音符喔！'); return; } activeNoteTypes = newActive; saveSettings(); document.getElementById('settings-modal').classList.add('hidden'); document.getElementById('settings-modal').classList.remove('flex'); });
+        document.getElementById('btn-open-settings').addEventListener('click', () => { try { document.getElementById('opt-special').checked = opts.special; document.getElementById('opt-mascot').checked = opts.mascot; document.getElementById('opt-dyn').checked = opts.dyn; document.getElementById('opt-bg').checked = opts.bg; } catch (e) {} document.getElementById('settings-modal').classList.remove('hidden'); document.getElementById('settings-modal').classList.add('flex'); });
+        document.getElementById('btn-close-settings').addEventListener('click', () => { const checkboxes = document.querySelectorAll('.toggle-checkbox'); let newActive = []; checkboxes.forEach(cb => { if(cb.checked) newActive.push(cb.id.replace('toggle_', '')); }); if(newActive.length === 0) { showToast('至少需要勾選一種音符喔！'); return; } activeNoteTypes = newActive; saveSettings(); try { opts.special = document.getElementById('opt-special').checked; opts.mascot = document.getElementById('opt-mascot').checked; opts.dyn = document.getElementById('opt-dyn').checked; opts.bg = document.getElementById('opt-bg').checked; saveOpts(); syncHomeBg(); applyMascotOpt(); } catch (e) {} document.getElementById('settings-modal').classList.add('hidden'); document.getElementById('settings-modal').classList.remove('flex'); });
 
         const views = { home: document.getElementById('home-view'), editor: document.getElementById('editor-view'), shop: document.getElementById('shop-view'), game: document.getElementById('game-view'), result: document.getElementById('result-modal') };
-        function switchView(v) { Object.values(views).forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); }); views[v].classList.remove('hidden'); views[v].classList.add('flex'); }
+        function switchView(v) { Object.values(views).forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); }); views[v].classList.remove('hidden'); views[v].classList.add('flex'); try { syncHomeBg(); } catch (e) {} }
         function showToast(m, ok=false) { const t=document.getElementById('toast'); t.classList.toggle('bg-emerald-500',ok); t.classList.toggle('bg-rose-500',!ok); document.getElementById('toast-icon').textContent=ok?'✅':'⚠️'; document.getElementById('toast-msg').textContent=m; t.classList.remove('opacity-0','-translate-y-20','pointer-events-none'); t.classList.add('opacity-100','translate-y-0'); setTimeout(()=>{ t.classList.remove('opacity-100','translate-y-0'); t.classList.add('opacity-0','-translate-y-20','pointer-events-none'); },2200); }
 
         let slots = new Array(16).fill(null), selectedNoteType = null, audioCtx = null, gameAnimationFrame, isGameRunning = false, isPaused = false, currentIsCustomMode = false, melodyVol = 1, numPlayers = 1, players = [], currentModeText = "";
-        const SPEED_LIST = [56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 154];
+        const SPEED_LIST = [56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 154, 168, 184, 200];
         let BPM = 96, BEAT_DURATION = 60 / BPM, FALL_BEATS = 1.7 / BEAT_DURATION, FALL_DURATION = BEAT_DURATION * FALL_BEATS;
 
-        function setBpm(value) { BPM = SPEED_LIST.includes(value) ? value : 96; BEAT_DURATION = 60 / BPM; FALL_BEATS = 1.7 / (60/96); FALL_DURATION = BEAT_DURATION * FALL_BEATS; document.querySelectorAll('.speed-bpm').forEach(el => el.textContent = `${BPM} BPM`); document.querySelectorAll('.speed-label').forEach(el => { const d = diffOf(BPM); el.textContent = '難度：' + d[0]; el.className = 'speed-label diff-tag diff-' + d[1]; }); document.querySelectorAll('.speed-down').forEach(el => el.disabled = BPM <= SPEED_LIST[0]); document.querySelectorAll('.speed-up').forEach(el => el.disabled = BPM >= SPEED_LIST[SPEED_LIST.length - 1]); }
+        function setBpm(value) { BPM = SPEED_LIST.includes(value) ? value : 96; BEAT_DURATION = 60 / BPM; FALL_BEATS = 1.7 / (60/96); FALL_DURATION = BEAT_DURATION * FALL_BEATS; document.querySelectorAll('.speed-bpm').forEach(el => el.textContent = `${BPM} BPM`); document.querySelectorAll('.speed-label').forEach(el => { const d = diffOf(BPM); el.textContent = '難度：' + (BPM > 154 ? '極速' : d[0]); el.className = 'speed-label diff-tag diff-' + d[1]; }); document.querySelectorAll('.speed-down').forEach(el => el.disabled = BPM <= SPEED_LIST[0]); document.querySelectorAll('.speed-up').forEach(el => el.disabled = BPM >= SPEED_LIST[SPEED_LIST.length - 1]); }
         function stepBpm(dir) { setBpm(SPEED_LIST[Math.max(0, Math.min(SPEED_LIST.length - 1, SPEED_LIST.indexOf(BPM) + dir))]); }
 
         let lastChallenge = null, gameSession = 0, countdownTimers = [], songStart = 0, lastBeatIdx = -99;
@@ -1233,10 +1323,10 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         // 事件佇列 + 前瞻幫浦：每 80ms 把「接下來 1.2 秒內」要響的音交給 Tone 排程，其餘留著；停止時整串丟掉
         const bgm = { on: false, theme: null, next: 0, loop: 0, wait: 0, gest: false, kitId: 0, timer: 0 };   // 主畫面背景音樂的狀態
         let EVQ = [], evI = 0, pumpTimer = null; const musicErrors = [];
-        const HORIZON = 1.2, Q = (t, fn) => EVQ.push({ t, fn });
+        const HORIZON = 1.2; let qGate = null; const Q = (t, fn) => EVQ.push({ t, fn, g: qGate });   // g：這個音要「到播放前一刻」才判斷要不要響（動態配樂用）
         function pump() {
             if (!audioCtx) return; { const pn = performance.now(); if (pumpLast && pn - pumpLast < 2000 && pn - pumpLast > pumpMaxGap) pumpMaxGap = pn - pumpLast; pumpLast = pn; } const lim = audioCtx.currentTime + HORIZON;
-            while (evI < EVQ.length && EVQ[evI].t <= lim) { const e = EVQ[evI++]; try { e.fn(e.t); } catch (err) { /* 單一音出錯不影響其他音 */ if (musicErrors.length < 20) musicErrors.push(String(err && err.message || err)); } }
+            while (evI < EVQ.length && EVQ[evI].t <= lim) { const e = EVQ[evI++]; if (e.g && !e.g()) continue; try { e.fn(e.t); } catch (err) { /* 單一音出錯不影響其他音 */ if (musicErrors.length < 20) musicErrors.push(String(err && err.message || err)); } }
             if (evI >= EVQ.length) { clearInterval(pumpTimer); pumpTimer = null; }
         }
         function startPump() { EVQ.sort((a, b) => a.t - b.t); evI = 0; clearInterval(pumpTimer); pumpTimer = null; pump(); if (evI < EVQ.length) pumpTimer = setInterval(pump, 80); }
@@ -1547,7 +1637,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         }
 
         // 每種音符在「一拍之內」的發聲位置（單位：拍），和 parseSlotsToGameNotes 的公式一致
-        const NOTE_OFFSETS = { quarter: [0], half: [0], 'dotted-half': [0], whole: [0], eighth: [0, 0.5], sixteenth: [0, 0.25, 0.5, 0.75], thirtysecond: [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875] };
+        const NOTE_OFFSETS = { quarter: [0], half: [0], 'dotted-half': [0], whole: [0], eighth: [0, 0.5], sixteenth: [0, 0.25, 0.5, 0.75] };
 
         // ================= 🎼 依挑戰長度「量身編曲」：有頭有尾的一首 =================
         // 和弦走向：第 1 小節 = 主和弦(開場)；中間照主題的和弦循環；最後三小節固定「預備 → 屬 → 主」收尾。
@@ -1587,9 +1677,9 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         }
         function hashChart(arr, salt) { let h = 2166136261 ^ salt; arr.forEach((s, i) => { const c = s && s.main ? s.type.length * 31 + s.type.charCodeAt(0) : 0; h = Math.imul(h ^ (c + i * 7), 16777619); }); return h >>> 0; }
 
-        function scheduleMusicWithRhythm(startTime, slotArrays, measures) {
+        function scheduleMusicWithRhythm(startTime, slotArrays, measures, song) {
             if (!kit) return;   // 沒有音樂引擎：靜音模式
-            const style = curStyle(), sp = BEAT_DURATION / 4, totalBeats = measures * 4, form = buildForm(measures, style), lastBar = measures - 1, penBar = measures - 2;
+            const style = curStyle(), sp = BEAT_DURATION / 4, totalBeats = measures * 4, form = song ? song.form : buildForm(measures, style), lastBar = measures - 1, penBar = measures - 2;
             const accG = style.accGain * balAcc; kit.mel.gain.value = style.melGain * melodyVol * balMel; kit.acc.gain.value = accG;
             if (measures > 1) { try { kit.acc.gain.cancelScheduledValues(0); kit.acc.gain.setValueAtTime(accG * 0.7, startTime); kit.acc.gain.linearRampToValueAtTime(accG, startTime + BEAT_DURATION * 4); } catch (e) {} }   // 開場：伴奏較輕，第 2 小節起漸強
             EVQ = []; evI = 0;
@@ -1614,16 +1704,29 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 if (bar === penBar && s >= 12) { const v = 0.4 + 0.15 * (s - 12); kit.snare(t, v); kit.wood(t, v); }   // 倒數第二小節尾端：過門，推向結尾
             }
 
+            // 2b) 動態配樂：連擊越高，伴奏越豐富（到播放前一刻才看連擊數決定要不要響；沒有連擊就完全等於原本的音樂）
+            if (opts.dyn && measures > 3) {
+                const low = lowPower(), B = BEAT_DURATION;
+                try {
+                    for (let bar = 1; bar < measures - 2; bar++) {
+                        const bt = startTime + bar * 4 * B, chord = CH[form[bar]];
+                        qGate = () => dynLevel() >= 1; for (let b = 0; b < 8; b++) kit.hat(bt + b * B / 2, b % 2 ? 0.22 : 0.3); kit.rim(bt + B, 0.28); kit.rim(bt + 3 * B, 0.28);
+                        qGate = () => dynLevel() >= 2; for (let b = 0; b < 4; b++) kit.kick(bt + b * B, 0.3); if (!low) kit.pad(bt, chord.m, B * 4, 0.15);
+                        if (!low) { qGate = () => dynLevel() >= 3; for (let b = 0; b < 4; b++) kit.chord(bt + b * B, chord.m, B * 0.9, 0.18); kit.crash(bt, 0.25, 1.4); }
+                    }
+                } finally { qGate = null; }
+            }
+
             // 3) 旋律：每個音符在它自己的 targetTime 發聲；音高沿音階走、收在主音
             slotArrays.forEach((arr, pi) => {
-                const mel = composeMelody(arr, form, style, measures, hashChart(arr, pi * 977 + measures));
+                if (song && pi > 0) return;   // 歌曲：兩位玩家同一首，旋律只放一次
+                const mel = song ? { pitch: song.pitch, lastKey: song.lastKey } : composeMelody(arr, form, style, measures, hashChart(arr, pi * 977 + measures));
                 for (let i = 0; i < totalBeats; i++) {
                     const s = arr[i]; if (!s || !s.main) continue; const t = startTime + i * BEAT_DURATION, offs = NOTE_OFFSETS[s.type]; if (!offs) continue;
                     const P = k => mtof(mel.pitch[i + ':' + k]), isLast = k => mel.lastKey === i + ':' + k;
                     if (s.type === 'quarter') playTone(t, P(0), isLast(0) ? 2.6 : 1);
                     else if (s.type === 'eighth') { playTone(t, P(0), isLast(0) ? 2.6 : 0.5); playTone(t + BEAT_DURATION / 2, P(1), isLast(1) ? 2.6 : 0.5); }
                     else if (s.type === 'sixteenth') for (let j = 0; j < 4; j++) playTone(t + BEAT_DURATION / 4 * j, P(j), isLast(j) ? 2.6 : 0.25, !isLast(j));
-                    else if (s.type === 'thirtysecond') for (let j = 0; j < 8; j++) playTone(t + BEAT_DURATION / 8 * j, P(j), isLast(j) ? 2.6 : 0.125, !isLast(j));
                     else if (s.type === 'half') playTone(t, P(0), isLast(0) ? 2.6 : 2);
                     else if (s.type === 'dotted-half') playTone(t, P(0), isLast(0) ? 2.6 : 3);
                     else if (s.type === 'whole') playTone(t, P(0), 4);
@@ -1723,26 +1826,26 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         document.body.addEventListener('click', (e) => { if (!e.target.closest('.deck-card') && !e.target.closest('.slot')) { selectedNoteType = null; deckCards.forEach(c => c.classList.remove('deck-selected')); }});
         document.getElementById('board').addEventListener('dragover', e=>{e.preventDefault();const s=e.target.closest('.slot');if(s)s.classList.add('slot-active');}); document.getElementById('board').addEventListener('dragleave', e=>{const s=e.target.closest('.slot');if(s)s.classList.remove('slot-active');}); document.getElementById('board').addEventListener('drop', e=>{ e.preventDefault(); const s=e.target.closest('.slot'); if(s) { s.classList.remove('slot-active'); const t=e.dataTransfer.getData('text'); if(t) placeNote(parseInt(s.dataset.index), t); }});
         document.getElementById('btn-clear').addEventListener('click', () => { slots = new Array(16).fill(null); renderEditorBoard(); });
-        function fillRandomSlots(measures) { let temp = new Array(measures * 4).fill(null), i = 0; const active = activeNoteTypes.length > 0 ? activeNoteTypes : ['quarter']; while (i < measures * 4) { let r = active[Math.floor(Math.random() * active.length)], beats = noteData[r].beats; if (i % 4 + beats > 4) { const fits = active.filter(t => noteData[t].beats <= (4 - (i%4))); if(fits.length > 0) { r = fits[Math.floor(Math.random()*fits.length)]; beats = noteData[r].beats; } else { r = 'quarter'; beats = 1; } } temp[i] = { type: r, main: true }; for(let b=1; b<beats; b++) temp[i+b] = { type: 'tied', parent: i }; i += beats; } return temp; }
+        function fillRandomSlots(measures, pool, rng) { rng = rng || Math.random; let temp = new Array(measures * 4).fill(null), i = 0; const active = pool && pool.length ? pool : (activeNoteTypes.length > 0 ? activeNoteTypes : ['quarter']); while (i < measures * 4) { let r = active[Math.floor(rng() * active.length)], beats = noteData[r].beats; if (i % 4 + beats > 4) { const fits = active.filter(t => noteData[t].beats <= (4 - (i%4))); if(fits.length > 0) { r = fits[Math.floor(rng()*fits.length)]; beats = noteData[r].beats; } else { r = 'quarter'; beats = 1; } } temp[i] = { type: r, main: true }; for(let b=1; b<beats; b++) temp[i+b] = { type: 'tied', parent: i }; i += beats; } return temp; }
         document.getElementById('btn-random-editor').addEventListener('click', () => { slots = fillRandomSlots(4); renderEditorBoard(); });
 
         function parseSlotsToGameNotes(slotArray, startTime) {
             let notes = [], id = 0;
             for (let i = 0; i < slotArray.length; i++) {
                 const s = slotArray[i]; if (!s || !s.main) continue;
-                const t = startTime + (i * BEAT_DURATION), nd = noteData[s.type];
+                const t = startTime + (i * BEAT_DURATION), nd = noteData[s.type], b0 = notes.length;
                 if (nd.isHold) {
                     const visualBeats = Math.max(0.5, nd.beats - 0.4);
                     notes.push({ id: id++, targetTime: t, isRest: false, label: nd.symbol, class: nd.class, hit: false, missed: false, el: null, isHold: true, durationBeats: nd.beats, visualBeats: visualBeats, endTime: t + (visualBeats * BEAT_DURATION), holdScored: 0, completed: false });
                 } else if (s.type === 'eighth') {
-                    notes.push({ id: id++, targetTime: t, isRest: false, label: nd.symbol, class: nd.class, hit:false, missed:false, el:null, completed:false }); notes.push({ id: id++, targetTime: t + BEAT_DURATION/2, isRest: false, label: nd.symbol, class: nd.class, hit:false, missed:false, el:null, completed:false });
+                    notes.push({ id: id++, targetTime: t, isRest: false, label: nd.symbol, class: nd.class + (s.sp === 'gold' ? ' note-gold' : ''), gold: s.sp === 'gold', hit:false, missed:false, el:null, completed:false }); notes.push({ id: id++, targetTime: t + BEAT_DURATION/2, isRest: false, label: nd.symbol, class: nd.class, hit:false, missed:false, el:null, completed:false });
                 } else if (s.type === 'sixteenth') {
                     for(let j=0; j<4; j++) notes.push({ id: id++, targetTime: t + BEAT_DURATION/4*j, isRest: false, label: nd.symbol, class: nd.class, hit:false, missed:false, el:null, completed:false });
-                } else if (s.type === 'thirtysecond') {
-                    for(let j=0; j<8; j++) notes.push({ id: id++, targetTime: t + BEAT_DURATION/8*j, isRest: false, label: nd.symbol, class: nd.class, hit:false, missed:false, el:null, completed:false });
                 } else {
-                    notes.push({ id: id++, targetTime: t, isRest: (s.type==='rest'), label: nd.symbol, class: nd.class + (s.type==='rest'?' falling-rest':''), hit: false, missed: false, el: null, completed:false });
+                    const trap = s.type === 'rest' && s.sp === 'trap', gold = s.type === 'quarter' && s.sp === 'gold';
+                    notes.push({ id: id++, targetTime: t, isRest: (s.type==='rest'), isTrap: trap, gold, label: trap ? '💣' : nd.symbol, class: nd.class + (s.type==='rest'?' falling-rest':'') + (trap ? ' note-trap' : '') + (gold ? ' note-gold' : ''), hit: false, missed: false, el: null, completed:false });
                 }
+                for (let k = b0; k < notes.length; k++) notes[k].nt = s.type;
             }
             return notes;
         }
@@ -1793,18 +1896,158 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             }
         }
 
+
+        // ================= ✨ 版本 18：特殊音符、Perfect 連擊特效、吉祥物、動態配樂、合作模式、建議、歌曲模式 =================
+        // 設計原則：打擊判定（Perfect/Good/Miss/Hold 的秒數與 ACC 計分）完全不動。
+        //   金色音符 ＝ 一般音符 + 打 Perfect 的額外積分；炸彈 ＝ 休止符的另一種外觀（沒按算 1 分，按了跟按休止符一樣）。
+        const OPT_KEY = 'rhythmGame.opts.v18', opts = { special: true, mascot: true, dyn: true, bg: true };
+        try { const o = JSON.parse(localStorage.getItem(OPT_KEY) || 'null'); if (o && typeof o === 'object') for (const k of Object.keys(opts)) if (typeof o[k] === 'boolean') opts[k] = o[k]; } catch (e) {}
+        const saveOpts = () => { try { localStorage.setItem(OPT_KEY, JSON.stringify(opts)); } catch (e) {} };
+        let lastAdvice = null;
+        // 在隨機譜裡撒特殊音符：第 1 小節和最後 1 小節不放炸彈；炸彈彼此至少隔 6 拍
+        function addSpecials(arr, boss) {
+            const n = arr.length, maxGold = Math.ceil(n / 4 * 0.6) + (boss ? 2 : 0); let lastTrap = -99, golds = 0;
+            for (let i = 4; i < n; i++) {
+                const s = arr[i]; if (!s || !s.main) continue;
+                if (s.type === 'quarter' && i < n - 4 && i - lastTrap >= 6 && Math.random() < (boss ? 0.09 : 0.05)) { arr[i] = { type: 'rest', main: true, sp: 'trap' }; lastTrap = i; continue; }
+                if ((s.type === 'quarter' || s.type === 'eighth') && golds < maxGold && Math.random() < (boss ? 0.1 : 0.12)) { s.sp = 'gold'; golds++; }
+            }
+        }
+        const STREAK_AT = [5, 10, 20, 30, 50, 75, 100];
+        function chime(mults, gap) { if (isPaused || !sfx || !audioCtx) return; try { const t0 = audioCtx.currentTime; mults.forEach((m, i) => sfx.ding.triggerAttackRelease(1760 * m, 0.12, t0 + i * gap, 0.7)); } catch (e) {} }
+        function goldPerfect(p, multi, x, y) {
+            p.goldHits = (p.goldHits || 0) + 1; p.score += 200 * multi; spawnParticles(x, y, 'perfect', p); chime([1.5, 2, 2.5], 0.07); mascotFace('😻', 900);
+            const sid = gameSession; setTimeout(() => { if (sid === gameSession && isGameRunning) showFeedback(p, '⭐ ×2 金色!', 'feedback-perfect'); }, 140);
+        }
+        function streakCheck(p, x, y) {
+            const n = p.pStreak || 0, k = STREAK_AT.indexOf(n); if (k < 0) return;
+            spawnParticles(x, y, 'perfect', p); chime([1.25 + k * 0.04, 1.5 + k * 0.04, 2 + k * 0.04], 0.06); mascotFace('😻', 900);
+            const sid = gameSession; setTimeout(() => { if (sid === gameSession && isGameRunning) showFeedback(p, '🔥 ' + n + ' 連 Perfect!', 'feedback-perfect'); }, 140);
+        }
+        // 吉祥物：用貓咪表情反應；每拍輕輕彈一下
+        let mascotTimer = 0;
+        function mascotFace(f, ms) { const el = document.getElementById('mascot-face'); if (!el) return; if (el.textContent !== f) el.textContent = f; clearTimeout(mascotTimer); if (ms) mascotTimer = setTimeout(() => { if (el.textContent !== '😺') el.textContent = '😺'; }, ms); }
+        function mascotReact(cls) { const f = cls === 'feedback-perfect' ? '😸' : cls === 'feedback-good' ? '😺' : cls === 'feedback-miss' ? '😿' : cls === 'feedback-penalty' ? '🙀' : null; if (f) mascotFace(f, 700); }
+        function mascotBeat(big) { const el = document.getElementById('mascot'); if (el && el.animate) el.animate([{ transform: 'scale(' + (big ? 1.3 : 1.14) + ') rotate(' + (big ? -10 : 8) + 'deg)' }, { transform: 'scale(1) rotate(0deg)' }], { duration: Math.min(300, BEAT_DURATION * 500), easing: 'ease-out' }); }
+        function applyMascotOpt() { const el = document.getElementById('mascot'); if (el) el.style.display = opts.mascot ? '' : 'none'; }
+        function mascotReset() { mascotFace('😺', 0); applyMascotOpt(); }
+        // 動態配樂：目前（最高）連擊 → 配樂層級
+        function dynLevel() { if (!opts.dyn || !isGameRunning) return 0; let c = 0; for (const p of players) if (p.combo > c) c = p.combo; return c >= 45 ? 3 : c >= 25 ? 2 : c >= 10 ? 1 : 0; }
+        // 合作模式按鈕（雙人時才出現）
+        function updateCoopBtn() { const b = document.getElementById('btn-coop'); if (!b) return; b.classList.toggle('hidden', numPlayers !== 2); b.classList.toggle('on', coopMode); }
+        document.getElementById('btn-coop').addEventListener('click', () => { coopMode = !coopMode; updateCoopBtn(); showToast(coopMode ? '🤝 合作模式：兩人共用連擊、一起拿成績' : '雙人對戰模式', true); });
+        // 建議：連續 3 場 S → 建議加速；連續 2 場低於 50% → 建議放慢（魔王、每週挑戰、歌曲不列入）
+        function adviceFor(s, kind) {
+            if (kind) return null; const r = (s.recent || []).filter(x => !x.k), idx = SPEED_LIST.indexOf(BPM), l3 = r.slice(-3), l2 = r.slice(-2);
+            if (l3.length === 3 && l3.every(x => x.p >= 95 && x.b === BPM)) return idx < SPEED_LIST.length - 1 ? { t: '連續 3 場 S！試試更快的 ' + SPEED_LIST[idx + 1] + ' BPM 🚀', bpm: SPEED_LIST[idx + 1] } : { t: '連續 3 場 S，已經是最快速度了！試試「魔王模式」或「歌曲模式」🔥', bpm: null };
+            if (l2.length === 2 && l2.every(x => x.p < 50 && x.b === BPM) && idx > 0) return { t: '連續兩場有點吃力，先慢一點（' + SPEED_LIST[idx - 1] + ' BPM），練熟再加速 🐢', bpm: SPEED_LIST[idx - 1] };
+            return null;
+        }
+        function renderAdvice() { const box = document.getElementById('result-advice'); if (!box) return; if (!lastAdvice) { box.classList.add('hidden'); return; } document.getElementById('advice-text').textContent = lastAdvice.t; document.getElementById('btn-advice').classList.toggle('hidden', lastAdvice.bpm == null); box.classList.remove('hidden'); }
+        document.getElementById('btn-advice').addEventListener('click', () => { if (lastAdvice && lastAdvice.bpm != null) { setBpm(lastAdvice.bpm); showToast('速度已調成 ' + lastAdvice.bpm + ' BPM', true); document.getElementById('btn-advice').classList.add('hidden'); } });
+
+        // ---------- 🎼 歌曲模式 ----------
+        // 譜面寫法：小節用 | 隔開；音名 C4（中央 C）、升降號 C#4 Bb3；:2 = 2 拍、:3 = 3 拍、:4 = 4 拍、預設 1 拍；
+        // :.5 = 八分音符（要成對、從整拍開始）；R = 休止（R:1）。每小節必須剛好 4 拍。chords = 每小節一個和弦（C F G Am Dm 等）。
+        // ★ 老師想加「校歌」：把下面 CUSTOM_SONGS 裡的範例複製一份改一改即可（id 不能重複）。
+        const CUSTOM_SONGS = [
+            // { id: 'school', name: '我們的校歌', e: '🏫', bpm: 96, full: 750, chords: 'C C F C', notes: 'C4 D4 E4 C4 | E4 F4 G4:2 | G4 E4 F4 D4 | C4:4' },
+        ];
+        const SONGS_RAW = [
+            { id: 'twinkle', name: '小星星', e: '⭐', bpm: 96, full: 750, chords: 'C F F C C G C G C F F C', notes: 'C4 C4 G4 G4 | A4 A4 G4:2 | F4 F4 E4 E4 | D4 D4 C4:2 | G4 G4 F4 F4 | E4 E4 D4:2 | G4 G4 F4 F4 | E4 E4 D4:2 | C4 C4 G4 G4 | A4 A4 G4:2 | F4 F4 E4 E4 | D4 D4 C4:2' },
+            { id: 'tigers', name: '兩隻老虎', e: '🐯', bpm: 104, full: 600, chords: 'C C C G C C G C', notes: 'C4 D4 E4 C4 | C4 D4 E4 C4 | E4 F4 G4:2 | E4 F4 G4:2 | G4:.5 A4:.5 G4:.5 F4:.5 E4 C4 | G4:.5 A4:.5 G4:.5 F4:.5 E4 C4 | C4 G3 C4:2 | C4 G3 C4:2' },
+            { id: 'mary', name: '瑪莉有隻小綿羊', e: '🐑', bpm: 96, full: 600, chords: 'C C G C C C G C', notes: 'E4 D4 C4 D4 | E4 E4 E4:2 | D4 D4 D4:2 | E4 G4 G4:2 | E4 D4 C4 D4 | E4 E4 E4 E4 | D4 D4 E4 D4 | C4:4' },
+            { id: 'ode', name: '快樂頌', e: '🎉', bpm: 112, full: 900, chords: 'C C C G C C C G G G G C C G C C', notes: 'E4 E4 F4 G4 | G4 F4 E4 D4 | C4 C4 D4 E4 | E4 D4 D4:2 | E4 E4 F4 G4 | G4 F4 E4 D4 | C4 C4 D4 E4 | D4 C4 C4:2 | D4 D4 E4 C4 | D4 E4:.5 F4:.5 E4 C4 | D4 E4:.5 F4:.5 E4 D4 | C4 D4 G3:2 | E4 E4 F4 G4 | G4 F4 E4 D4 | C4 C4 D4 E4 | D4 C4 C4:2' }
+        ];
+        const SONG_IDS = ['twinkle', 'tigers', 'mary', 'ode'];
+        let _songs = null;
+        function parseSong(def) {
+            const re = /^([A-Ga-g][#b]?\d|[Rr])(?::(\d*\.?\d+))?$/, SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+            const midi = n => { const m = n.match(/^([A-G])([#b]?)(\d)$/i); return SEMI[m[1].toUpperCase()] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + 12 * (+m[3] + 1); };
+            const bars = String(def.notes).split('|').map(b => b.trim()).filter(Boolean), M = bars.length; if (M < 2 || M > 40) throw new Error('小節數要 2～40');
+            const slots = new Array(M * 4).fill(null), pitch = {}; let lastKey = null;
+            for (let b = 0; b < M; b++) {
+                const tk = bars[b].split(/\s+/); let pos = 0;
+                for (let k = 0; k < tk.length; k++) {
+                    const m = tk[k].match(re); if (!m) throw new Error('第 ' + (b + 1) + ' 小節看不懂「' + tk[k] + '」');
+                    const isR = m[1].toUpperCase() === 'R', d = m[2] ? parseFloat(m[2]) : 1, idx = b * 4 + Math.round(pos);
+                    if (d === 0.5) {
+                        const m2 = tk[k + 1] && tk[k + 1].match(re); if (isR || !m2 || m2[1].toUpperCase() === 'R' || parseFloat(m2[2] || 1) !== 0.5 || Math.abs(pos - Math.round(pos)) > 1e-9) throw new Error('第 ' + (b + 1) + ' 小節的八分音符要成對、從整拍開始');
+                        slots[idx] = { type: 'eighth', main: true }; pitch[idx + ':0'] = midi(m[1]); pitch[idx + ':1'] = midi(m2[1]); lastKey = idx + ':1'; k++; pos += 1; continue;
+                    }
+                    if (Math.abs(pos - Math.round(pos)) > 1e-9 || ![1, 2, 3, 4].includes(d)) throw new Error('第 ' + (b + 1) + ' 小節拍子不支援（' + tk[k] + '）');
+                    if (isR) { for (let q = 0; q < d; q++) slots[idx + q] = { type: 'rest', main: true }; pos += d; continue; }
+                    const type = d === 1 ? 'quarter' : d === 2 ? 'half' : d === 3 ? 'dotted-half' : 'whole';
+                    slots[idx] = { type, main: true }; for (let q = 1; q < d; q++) slots[idx + q] = { type: 'tied', parent: idx }; pitch[idx + ':0'] = midi(m[1]); lastKey = idx + ':0'; pos += d;
+                }
+                if (Math.abs(pos - 4) > 1e-9) throw new Error('第 ' + (b + 1) + ' 小節要剛好 4 拍（現在 ' + pos + '）');
+            }
+            let form = String(def.chords || '').trim().split(/\s+/).filter(Boolean); if (form.length !== M || form.some(c => !CH[c])) form = new Array(M).fill('C');
+            const bpm = SPEED_LIST.includes(def.bpm) ? def.bpm : 96;
+            return { id: String(def.id), name: String(def.name || def.id), e: def.e || '🎵', bpm, full: +def.full > 0 ? +def.full : 600, measures: M, slots, pitch, lastKey, form, custom: !SONG_IDS.includes(def.id) };
+        }
+        function songList() {
+            if (_songs) return _songs; _songs = [];
+            SONGS_RAW.concat(CUSTOM_SONGS).forEach(d => { try { if (_songs.some(x => x.id === String(d.id))) throw new Error('id 重複'); _songs.push(parseSong(d)); } catch (e) { diag('song', (d && d.id) + '：' + (e && e.message || e)); } });
+            return _songs;
+        }
+        const songById = id => songList().find(x => x.id === id) || null;
+        function renderSongs() {
+            const best = (stOf() || {}).songs || {};
+            document.getElementById('song-list').innerHTML = songList().map(sg => { const b = best[sg.id] || 0, st = b >= 95 ? '★★★' : b >= 85 ? '★★☆' : b >= 70 ? '★☆☆' : '☆☆☆';
+                return '<div class="ach-card ach-on"><div class="ach-emoji">' + sg.e + '</div><div class="flex-1 min-w-0"><div class="font-black text-sm">' + esc(sg.name) + (sg.custom ? ' <span class="text-[10px] text-violet-600">老師加的</span>' : '') + '</div><div class="text-xs font-bold opacity-70">' + sg.measures + ' 小節・' + sg.bpm + ' BPM・滿分 ' + sg.full + ' 分</div><div class="text-xs font-black text-amber-600">' + st + (b ? '　最佳 ' + fmtPct(b) : '') + '</div></div><button data-song="' + esc(sg.id) + '" class="song-go px-3 py-2 rounded-xl bg-emerald-500 text-white font-black border-b-4 border-emerald-700 active:scale-95">▶</button></div>'; }).join('');
+        }
+        function startSong(id) {
+            if (isGameRunning || !currentUser) return; const sg = songById(id); if (!sg) return;
+            closeM('song-modal'); closeStart(); setBpm(sg.bpm); runKind = 'song'; runSong = sg; startChallenge(sg.measures, '🎼 ' + sg.name, JSON.parse(JSON.stringify(sg.slots)), null, false);
+        }
+        document.getElementById('btn-open-songs').addEventListener('click', () => { renderSongs(); closeStart(); openM('song-modal'); });
+        document.getElementById('btn-close-songs').addEventListener('click', () => closeM('song-modal'));
+        document.getElementById('song-list').addEventListener('click', e => { const b = e.target.closest('.song-go'); if (b) startSong(b.dataset.song); });
+
+        // ---------- 🎞 首頁動畫背景：漸層幻燈（3 張淡入淡出）＋漂浮音符＋底部跳動音柱；只在首頁顯示，手機/省電模式自動簡化 ----------
+        let hbTimer = null, hbMode = '', hbIdx = 0;
+        function syncHomeBg() {
+            const bg = document.getElementById('home-bg'); if (!bg) return;
+            const on = !!opts.bg && !views.home.classList.contains('hidden'), low = document.body.classList.contains('lowfx') || isPhone;
+            bg.classList.toggle('off', !on);
+            if (!on) { clearInterval(hbTimer); hbTimer = null; return; }
+            const mode = low ? 'low' : 'full';
+            if (hbMode !== mode) {
+                hbMode = mode; const n = low ? 6 : 14, ems = ['♪', '♫', '♩', '🎵', '🥁', '🎹', '⭐'], box = document.getElementById('hb-notes'); box.innerHTML = '';
+                for (let i = 0; i < n; i++) { const e = document.createElement('span'); e.className = 'hb-note'; e.textContent = ems[i % ems.length]; e.style.left = (4 + (i * 97 / n) % 92) + '%'; e.style.fontSize = (22 + (i * 7) % 26) + 'px'; e.style.animationDuration = (14 + (i * 5) % 11) + 's'; e.style.animationDelay = (-(i * 3.7) % 20) + 's'; e.style.setProperty('--sw', ((i % 2 ? 1 : -1) * (20 + (i * 11) % 50)) + 'px'); box.appendChild(e); }
+                const eq = document.getElementById('hb-eq'); eq.innerHTML = ''; if (!low) for (let i = 0; i < 30; i++) { const b = document.createElement('i'); b.style.animationDuration = (0.5 + (i * 37 % 70) / 100) + 's'; b.style.animationDelay = (-(i * 0.13)) + 's'; eq.appendChild(b); }
+            }
+            if (!hbTimer) hbTimer = setInterval(() => { if (document.hidden) return; const sc = document.querySelectorAll('.hb-scene'); hbIdx++; sc.forEach((e, i) => e.classList.toggle('on', i === hbIdx % sc.length)); }, 7000);
+        }
+        setTimeout(() => { try { syncHomeBg(); } catch (e) {} }, 0);
+        let runKind = null, pendingKind = null, runSong = null, pendingSong = null, coopMode = false;   // 這一場的特殊種類：'boss'（魔王）/ 'weekly'（每週挑戰）
+        const BOSS_POOL = ['eighth', 'eighth', 'sixteenth', 'sixteenth', 'sixteenth', 'quarter', 'quarter', 'rest', 'half'];   // 魔王模式：不管音符設定，一律密集
         function startChallengeCore(measures, title, predefinedSlots=null, chartList=null, isCustom=false) {
+            const kind = pendingKind; pendingKind = null; const song = pendingSong; pendingSong = null;
             applyLowFx(); perfMonStart();
             resetAudioContext(); gameSession++; countdownTimers.forEach(clearTimeout); countdownTimers=[];
             currentIsCustomMode = isCustom; isPaused = false; document.getElementById('pause-overlay').classList.add('hidden'); document.getElementById('pause-overlay').classList.remove('flex');
             buildPlayerPanels(); switchView('game'); particles=[]; requestAnimationFrame(animateParticles);
             currentModeText = title + (numPlayers===2?' ・雙人':''); players.forEach(updateHUD); isGameRunning = true;
             const startTime = audioCtx.currentTime + (4 * BEAT_DURATION); songStart = startTime; lastBeatIdx = -99; let charts;
-            if (chartList && chartList.length === numPlayers) charts = JSON.parse(JSON.stringify(chartList)); else { charts = []; for (let i=0; i<numPlayers; i++) charts.push(i===0 && predefinedSlots ? predefinedSlots : fillRandomSlots(measures)); if (numPlayers===2 && predefinedSlots) showToast('雙人模式：2P 拿隨機譜', true); }
-            lastChallenge = { measures, title, charts: JSON.parse(JSON.stringify(charts)), isCustom };
+            const coopOn = numPlayers === 2 && coopMode && !isCustom, cl = o => JSON.parse(JSON.stringify(o));
+            if (chartList && chartList.length === numPlayers) charts = cl(chartList);
+            else {
+                charts = [];
+                if (song) { for (let i = 0; i < numPlayers; i++) charts.push(cl(predefinedSlots)); }
+                else {
+                    const mk = () => { const c = fillRandomSlots(measures, kind === 'boss' ? BOSS_POOL : null); if (opts.special && !isCustom && kind !== 'weekly') { try { addSpecials(c, kind === 'boss'); } catch (e) { diag('special', e && e.message || e); } } return c; };
+                    for (let i = 0; i < numPlayers; i++) charts.push(i === 0 && predefinedSlots ? predefinedSlots : (coopOn && i === 1 ? cl(charts[0]) : mk()));
+                    if (numPlayers === 2 && predefinedSlots && !coopOn) showToast('雙人模式：2P 拿隨機譜', true);
+                }
+            }
+            lastChallenge = { measures, title, charts: cl(charts), isCustom, kind, coop: coopOn, song: song ? song.id : null, full: song ? song.full : undefined };
+            if (coopOn) { const team = { c: 0 }; players.forEach(p => Object.defineProperty(p, 'combo', { get() { return team.c; }, set(v) { team.c = v; }, configurable: true, enumerable: true })); }   // 合作：兩人共用同一個連擊數
+            mascotReset();
             players.forEach((p, i) => { p.notes = parseSlotsToGameNotes(charts[i], startTime); p.total = p.notes.length; });
             prebuildNotes();
-            melodyVol = numPlayers===2?0.7:1; scheduleMusicWithRhythm(startTime, charts, measures);
+            melodyVol = numPlayers===2?0.7:1; scheduleMusicWithRhythm(startTime, charts, measures, song);
             for (let i = 4; i > 0; i--) { countdownTimers.push(setTimeout(() => { if(isPaused) return; players.forEach(p => { p.countText.textContent = i; p.countText.style.opacity = '1'; p.countText.style.transform = 'scale(1.4)'; setTimeout(() => { p.countText.style.transform = 'scale(1)'; p.countText.style.opacity = '0'; }, 180); }); }, (startTime - audioCtx.currentTime - (i * BEAT_DURATION)) * 1000)); }
             gameAnimationFrame = requestAnimationFrame(gameLoop);
         }
@@ -1816,6 +2059,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 // 開局前：確認「目前主題」的取樣音色都載好了；沒有就走載入畫面（會順便丟掉別的主題的取樣）。載不到就改用內建合成音色，不會卡住
         let startBusy = false;
         async function startChallenge(...args) {
+            const kind = runKind; runKind = null; const song = runSong; runSong = null;
             if (startBusy || audioBusy) return;
             practiceReset();
             initAudio();   // 一定要在點擊的當下呼叫，瀏覽器才允許出聲
@@ -1823,13 +2067,13 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 startBusy = true;
                 try { const ok = await prepareTheme(currentTheme, (typeof THEMES !== 'undefined' && THEMES[currentTheme] || {}).label); if (!ok) return; } finally { startBusy = false; }
             }
-            return startChallengeCore(...args);
+            pendingKind = kind; pendingSong = song; return startChallengeCore(...args);
         }
         function updateHUD(p) { p.scoreEl.textContent = Math.round(livePercent(p)) + '%'; p.comboEl.textContent = p.combo; if(p.combo > p.maxCombo) p.maxCombo = p.combo; }
         // 判定圈的位置：每 0.3 秒才量一次（每次打擊都量會強迫瀏覽器重新排版，音符一密就卡）
         function hitCenter(p) { const n = performance.now(); if (!p._hc || n - p._hcT > 300) { const r = p.hitZone.getBoundingClientRect(); p._hc = [r.left + r.width / 2, r.top + r.height / 2]; p._hcT = n; } return p._hc; }
         function hitLineOf(p) { const n = performance.now(); if (p._hly === undefined || n - p._hlyT > 300) { p._hly = p.hitZone.offsetTop + (p.hitZone.offsetHeight / 2); p._hlyT = n; } return p._hly; }
-        function showFeedback(p, text, typeClass) { while (p.feedbackEl.childElementCount > 3) p.feedbackEl.firstElementChild.remove(); const el = document.createElement('div'); el.className = `hit-feedback ${typeClass}`; el.textContent = text; p.feedbackEl.appendChild(el); setTimeout(() => el.remove(), 600); }
+        function showFeedback(p, text, typeClass) { if (opts.mascot) mascotReact(typeClass); while (p.feedbackEl.childElementCount > 3) p.feedbackEl.firstElementChild.remove(); const el = document.createElement('div'); el.className = `hit-feedback ${typeClass}`; el.textContent = text; p.feedbackEl.appendChild(el); setTimeout(() => el.remove(), 600); }
         function getComboMulti(c) { return c >= 40 ? 3 : (c >= 20 ? 2 : 1); }
         
 // 開局時一次把所有音符的元素建好（先隱藏），遊戲迴圈裡只改 transform / opacity，不再 createElement
@@ -1850,7 +2094,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             if (!isGameRunning) return; if (isPaused) { gameAnimationFrame = requestAnimationFrame(gameLoop); return; }
             const now = audioCtx.currentTime - audioOffset; 
             const bi = Math.floor((now - songStart) / BEAT_DURATION);
-            if (bi !== lastBeatIdx) { lastBeatIdx = bi; const big = ((bi % 4) + 4) % 4 === 0; players.forEach(p => { const ln = p.hitZone.firstElementChild; if (ln && ln.animate) ln.animate([{ transform: `scaleY(${big ? 5 : 3})`, opacity: 1 }, { transform: 'scaleY(1)', opacity: 0.85 }], { duration: Math.min(320, BEAT_DURATION * 600), easing: 'ease-out' }); }); }
+            if (bi !== lastBeatIdx) { lastBeatIdx = bi; const big = ((bi % 4) + 4) % 4 === 0; if (opts.mascot) mascotBeat(big); players.forEach(p => { const ln = p.hitZone.firstElementChild; if (ln && ln.animate) ln.animate([{ transform: `scaleY(${big ? 5 : 3})`, opacity: 1 }, { transform: 'scaleY(1)', opacity: 0.85 }], { duration: Math.min(320, BEAT_DURATION * 600), easing: 'ease-out' }); }); }
 
             players.forEach(p => {
                 const hitLineY = hitLineOf(p);
@@ -1877,7 +2121,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                         } else if (!p.isHolding || p.activeHoldNote !== note) {
                             note.completed = true; 
                             if (note.el) { note.el.style.opacity = '0'; note.el.style.willChange = ''; }
-                            p.combo = 0; updateHUD(p); showFeedback(p, 'Miss Hold!', 'feedback-miss'); playBuzzer(now);
+                            p.combo = 0; p.pStreak = 0; updateHUD(p); showFeedback(p, 'Miss Hold!', 'feedback-miss'); playBuzzer(now);
                         } else {
                             const beatsPassed = Math.floor((now - note.targetTime) / BEAT_DURATION);
                             if (beatsPassed > note.holdScored && beatsPassed <= note.visualBeats) {
@@ -1892,8 +2136,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                     if (timeDiff < -TIME_GOOD) {
                         note.missed = true;
                         note.completed = true; 
-                        p.resolved++; if (!note.isRest) { p.combo = 0; p.misses++; updateHUD(p); showFeedback(p, 'Miss!', 'feedback-miss'); } 
-                        else { p.combo++; p.credit += 1; updateHUD(p); showFeedback(p, 'Rest!', 'feedback-good'); }
+                        p.resolved++; if (!note.isRest) { p.combo = 0; p.pStreak = 0; p.misses++; updateHUD(p); showFeedback(p, 'Miss!', 'feedback-miss'); } 
+                        else { p.combo++; p.credit += 1; if (note.isTrap) p.trapSafe = (p.trapSafe || 0) + 1; updateHUD(p); showFeedback(p, note.isTrap ? '躲過炸彈!' : 'Rest!', 'feedback-good'); }
                         if (note.el) { note.el.style.opacity = '0'; note.el.style.willChange = ''; }
                         continue;
                     }
@@ -1924,7 +2168,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             if (isGameRunning) gameAnimationFrame = requestAnimationFrame(gameLoop);
         }
 
-        function triggerPenalty(p) { playBuzzer(audioCtx.currentTime); p.penalties++; p.score = Math.max(0, p.score - 50); p.combo = 0; updateHUD(p); showFeedback(p, '錯誤! -50', 'feedback-penalty'); p.panel.classList.add('error-shake'); setTimeout(() => p.panel.classList.remove('error-shake'), 350); }
+        function triggerPenalty(p) { playBuzzer(audioCtx.currentTime); p.penalties++; p.score = Math.max(0, p.score - 50); p.combo = 0; p.pStreak = 0; updateHUD(p); showFeedback(p, '錯誤! -50', 'feedback-penalty'); p.panel.classList.add('error-shake'); setTimeout(() => p.panel.classList.remove('error-shake'), 350); }
 
         function handleHitInput(e, p, isPress) {
             if (!isGameRunning || isPaused || !p) return;
@@ -1938,12 +2182,13 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             p.notes.forEach(note => { if (note.hit || note.missed || note.completed) return; const absDiff = Math.abs(note.targetTime - now); if (absDiff < minDiff) { minDiff = absDiff; closestNote = note; } });
             if (!closestNote || minDiff > TIME_MISS_LIMIT) { triggerPenalty(p); return; }
             
-            if (closestNote.isRest) { p.resolved++; closestNote.hit = true; closestNote.completed = true; if (closestNote.el) closestNote.el.style.opacity = '0'; triggerPenalty(p); return; }
+            if (closestNote.isRest) { if (closestNote.isTrap) p.trapHit = (p.trapHit || 0) + 1; p.resolved++; closestNote.hit = true; closestNote.completed = true; if (closestNote.el) closestNote.el.style.opacity = '0'; triggerPenalty(p); return; }
             
             closestNote.hit = true; playHitDing(now, PLAYER_THEME[p.index].pitch); p.combo++; const multi = getComboMulti(p.combo); const multiText = '';
             const hc = hitCenter(p), cX = hc[0], cY = hc[1];
-            const q = minDiff <= TIME_PERFECT ? 1 : 0.7; p.credit += closestNote.isHold ? 0.5 * q : q; p.resolved++; if (minDiff <= TIME_PERFECT) { p.score += 200 * multi; p.perfect++; showFeedback(p, `Perfect!${multiText}`, 'feedback-perfect'); spawnParticles(cX, cY, 'perfect', p); } else { p.goods++; p.score += 100 * multi; showFeedback(p, `Good!${multiText}`, 'feedback-good'); spawnParticles(cX, cY, 'good', p); }
+            const q = minDiff <= TIME_PERFECT ? 1 : 0.7; p.credit += closestNote.isHold ? 0.5 * q : q; p.resolved++; if (minDiff <= TIME_PERFECT) { p.score += 200 * multi; p.perfect++; p.pStreak = (p.pStreak || 0) + 1; if (p.pStreak > (p.pStreakMax || 0)) p.pStreakMax = p.pStreak; showFeedback(p, `Perfect!${multiText}`, 'feedback-perfect'); spawnParticles(cX, cY, 'perfect', p); } else { p.goods++; p.pStreak = 0; p.score += 100 * multi; showFeedback(p, `Good!${multiText}`, 'feedback-good'); spawnParticles(cX, cY, 'good', p); }
             updateHUD(p);
+            try { if (minDiff <= TIME_PERFECT) { if (closestNote.gold) goldPerfect(p, multi, cX, cY); streakCheck(p, cX, cY); } } catch (e) { diag('fx', e && e.message || e); }
             
             if (closestNote.isHold) { p.activeHoldNote = closestNote; if (closestNote.el) closestNote.el.classList.add('holding-glow'); } 
             else { if (closestNote.el) { closestNote.el.style.transform += ' scale(1.4)'; closestNote.el.style.opacity = '0'; } closestNote.completed = true; }
@@ -2155,7 +2400,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         function endOrLoop() {
             if (!practice.active) { endGame(); return; }
             const p = players[0], pct = p ? finalPercent(p) : 0; practice.round++; practice.best = Math.max(practice.best, pct);
-            try { addPlaySec(true); statBump('practiceRounds', 1); const got = achCheck({}); if (got.length) { persistUser(); updateWalletUI(); setTimeout(() => showToast('🏅 解鎖成就「' + got[0].n + '」 +' + got[0].bonus + ' 積分', true), 2400); } } catch (e) { diag('ach', e && e.message || e); }
+            try { addPlaySec(true); statBump('practiceRounds', 1); questOnPractice(); } catch (e) { diag('ach', e && e.message || e); }
             showToast('第 ' + practice.round + ' 輪：' + fmtPct(pct) + '（最佳 ' + fmtPct(practice.best) + '），下一輪開始', true);
             practiceApplyTempo(); startChallengeCore(practice.measures, practice.title, practice.chart, null, true);
         }
@@ -2183,6 +2428,31 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             { id: 'play60',   e: '🎼', n: '節奏達人',     d: '累計演奏 ' + APM[1] + ' 分鐘',   bonus: ABONUS.play60,  t: (c, s) => playMin(s) >= APM[1],                p: s => [Math.min(APM[1], playMin(s)), APM[1]] },
             { id: 'play90',   e: '👑', n: '節拍之王',     d: '累計演奏 ' + APM[2] + ' 分鐘',   bonus: ABONUS.play90,  t: (c, s) => playMin(s) >= APM[2],                p: s => [Math.min(APM[2], playMin(s)), APM[2]] }
         ];
+        // ---- 進階成就（需要更多技巧或長期累積）----
+        ACHS.push(
+            { adv: 1, id: 'fast168',  e: '🚀', n: '極速傳說',     d: '速度 168 BPM 以上拿到 70% 以上', bonus: ABONUS.fast168, t: c => c.bpm >= 168 && c.pct >= 70 },
+            { adv: 1, id: 'boss1',    e: '👹', n: '魔王挑戰者',   d: '完成 1 場魔王模式',             bonus: ABONUS.boss1,   t: c => !!c.boss },
+            { adv: 1, id: 'bossA',    e: '🐉', n: '屠龍勇者',     d: '魔王模式拿到 85% 以上',         bonus: ABONUS.bossA,   t: c => !!c.boss && c.pct >= 85 },
+            { adv: 1, id: 'fullcombo', e: '🎖', n: '全連擊',      d: '12 小節以上、一個 Miss 都沒有', bonus: ABONUS.fullcombo, t: c => c.measures >= 12 && c.misses === 0 && c.total >= 40 },
+            { adv: 1, id: 'perfect12', e: '💯', n: '長征完美',    d: '12 小節以上拿到 100%',          bonus: ABONUS.perfect12, t: c => c.measures >= 12 && c.pct >= 99.95 },
+            { adv: 1, id: 'combo100', e: '🌋', n: '連擊 100',     d: '單場最高連擊達 100',            bonus: ABONUS.combo100, t: c => c.maxCombo >= 100 },
+            { adv: 1, id: 'streakS3', e: '🌠', n: '三連 S',       d: '連續 3 場都拿到 S（95%）以上',  bonus: ABONUS.streakS3, t: (c, s) => (s.streakS || 0) >= 3, p: s => [Math.min(3, s.streakS || 0), 3] },
+            { adv: 1, id: 'perf1000', e: '✨', n: '完美收藏家',   d: '累計打出 1000 個 Perfect',      bonus: ABONUS.perf1000, t: (c, s) => (s.perfTotal || 0) >= 1000, p: s => [Math.min(1000, s.perfTotal || 0), 1000] },
+            { adv: 1, id: 'games100', e: '🎖', n: '百戰老將',     d: '累計完成 100 場挑戰',           bonus: ABONUS.games100, t: (c, s) => (s.games || 0) >= 100, p: s => [Math.min(100, s.games || 0), 100] },
+            { adv: 1, id: 'themesAllA', e: '🎼', n: '八面玲瓏',   d: '8 個主題都拿過 A（85%）以上',   bonus: ABONUS.themesAllA, t: (c, s) => (s.themeA || []).length >= 8, p: s => [Math.min(8, (s.themeA || []).length), 8] },
+            { adv: 1, id: 'dq5',      e: '📅', n: '勤勞小蜜蜂',   d: '累計 5 天完成全部每日任務',     bonus: ABONUS.dq5,     t: (c, s) => (s.dqDays || 0) >= 5, p: s => [Math.min(5, s.dqDays || 0), 5] },
+            { adv: 1, id: 'dq20',     e: '🗓', n: '全勤達人',     d: '累計 20 天完成全部每日任務',    bonus: ABONUS.dq20,    t: (c, s) => (s.dqDays || 0) >= 20, p: s => [Math.min(20, s.dqDays || 0), 20] },
+            { adv: 1, id: 'wk1',      e: '🏁', n: '週挑戰通關',   d: '每週挑戰拿到 70% 以上',         bonus: ABONUS.wk1,     t: (c, s) => (s.wkBest || 0) >= 70 },
+            { adv: 1, id: 'wk95',     e: '🏆', n: '週挑戰王者',   d: '每週挑戰拿到 95% 以上',         bonus: ABONUS.wk95,    t: (c, s) => (s.wkBest || 0) >= 95 },
+            { adv: 1, id: 'rankGold', e: '🥇', n: '升上金牌',     d: '段位升到金牌',                  bonus: ABONUS.rankGold, t: (c, s, u) => (u.lifetime || 0) >= ECON.RANKS[3][0] },
+            { adv: 1, id: 'gold5',    e: '⭐', n: '金手指',       d: '單場打中 5 個金色音符（Perfect）', bonus: ABONUS.gold5, t: c => (c.gold || 0) >= 5 },
+            { adv: 1, id: 'trap8',    e: '💣', n: '拆彈專家',     d: '單場閃過 8 個炸彈、一個都沒按到', bonus: ABONUS.trap8, t: c => (c.trapSafe || 0) >= 8 && (c.trapHit || 0) === 0 },
+            { adv: 1, id: 'streak30', e: '🔥', n: '三十連 Perfect', d: '連續 30 個 Perfect',           bonus: ABONUS.streak30, t: c => (c.pStreakMax || 0) >= 30 },
+            { adv: 1, id: 'coop85',   e: '🤝', n: '合作無間',     d: '雙人合作模式，團隊成績 85% 以上', bonus: ABONUS.coop85, t: c => !!c.coop && c.pct >= 85 },
+            { adv: 1, id: 'song1',    e: '🎼', n: '第一首歌',     d: '任一首歌曲拿到 70% 以上',        bonus: ABONUS.song1, t: (c, s) => Object.values(s.songs || {}).some(v => v >= 70) },
+            { adv: 1, id: 'songAll',  e: '🎹', n: '兒歌小樂手',   d: '4 首內建歌曲都拿到 85% 以上',    bonus: ABONUS.songAll, t: (c, s) => ['twinkle', 'tigers', 'mary', 'ode'].every(id => ((s.songs || {})[id] || 0) >= 85), p: s => [['twinkle', 'tigers', 'mary', 'ode'].filter(id => ((s.songs || {})[id] || 0) >= 85).length, 4] },
+            { adv: 1, id: 'rankDia',  e: '💎', n: '鑽石級玩家',   d: '段位升到鑽石',                  bonus: ABONUS.rankDia,  t: (c, s, u) => (u.lifetime || 0) >= ECON.RANKS[5][0] }
+        );
         // 累計演奏時間：每場從開場到結束的實際秒數（暫停不算；中途離開也算已演奏的部分）
         let playCounted = -1;
         function addPlaySec(quiet) {
@@ -2196,30 +2466,236 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         // 檢查並發放：回傳這次新解鎖的成就；獎勵積分直接加進帳號（呼叫端負責 persistUser）
         function achCheck(c) {
             const u = users[currentUser]; if (!u) return []; const s = stOf(); u.medals.ach = u.medals.ach || {}; const got = [];
-            ACHS.forEach(a => { if (u.medals.ach[a.id]) return; let ok = false; try { ok = !!a.t(c || {}, s); } catch (e) {} if (ok) { u.medals.ach[a.id] = Date.now(); u.points = (u.points || 0) + a.bonus; u.lifetime = (u.lifetime || 0) + a.bonus; got.push(a); } });
+            ACHS.forEach(a => { if (u.medals.ach[a.id]) return; let ok = false; try { ok = !!a.t(c || {}, s, u); } catch (e) {} if (ok) { u.medals.ach[a.id] = Date.now(); u.points = (u.points || 0) + a.bonus; u.lifetime = (u.lifetime || 0) + a.bonus; got.push(a); } });
             return got;
         }
         function achOnGame(pcts) {
             const s = stOf(), p = players[0]; if (!s || !p) return [];
-            const pct = pcts[0]; s.games = (s.games || 0) + 1; s.streakA = pct >= 85 ? (s.streakA || 0) + 1 : 0;
+            const pct = pcts[0]; s.games = (s.games || 0) + 1; s.streakA = pct >= 85 ? (s.streakA || 0) + 1 : 0; s.streakS = pct >= 95 ? (s.streakS || 0) + 1 : 0;
+            s.perfTotal = (s.perfTotal || 0) + (p.perfect || 0);
             s.themes = s.themes || []; if (!s.themes.includes(currentTheme)) s.themes.push(currentTheme);
+            s.themeA = s.themeA || []; if (pct >= 85 && !s.themeA.includes(currentTheme)) s.themeA.push(currentTheme);
             if (numPlayers === 2) s.duo = (s.duo || 0) + 1;
-            const got = achCheck({ pct, misses: p.misses || 0, total: p.total || 0, maxCombo: p.maxCombo || 0, bpm: BPM, measures: (lastChallenge && lastChallenge.measures) || 0 });
+            const kind = (lastChallenge && lastChallenge.kind) || null, coop = !!(lastChallenge && lastChallenge.coop), songId = (lastChallenge && lastChallenge.song) || null;
+            const ctx = { kind: 'game', coop, song: songId, gold: p.goldHits || 0, trapSafe: p.trapSafe || 0, trapHit: p.trapHit || 0, pStreakMax: p.pStreakMax || 0, pct, misses: p.misses || 0, total: p.total || 0, maxCombo: p.maxCombo || 0, perfects: p.perfect || 0, bpm: BPM, measures: (lastChallenge && lastChallenge.measures) || 0, boss: kind === 'boss', weekly: kind === 'weekly' && numPlayers === 1 };
+            try {   // 統計：歌曲最佳、近期成績（給「建議」用）、每種音符的失誤率、各難度平均、本週 Perfect（給老師儀表板與班級挑戰用）
+                if (songId) { s.songs = s.songs || {}; s.songs[songId] = Math.max(s.songs[songId] || 0, Math.round(pct * 10) / 10); }
+                s.recent = (s.recent || []).concat([{ p: Math.round(pct * 10) / 10, b: BPM, k: kind || '' }]).slice(-6);
+                s.nt = s.nt || {}; p.notes.forEach(n => { if (!n.nt || n.nt === 'rest') return; const a = s.nt[n.nt] || (s.nt[n.nt] = [0, 0]); a[0]++; if (n.missed) a[1]++; });
+                const m = (lastChallenge && lastChallenge.measures) || 0; if (!kind && m) { s.lv = s.lv || {}; const a = s.lv[m] || (s.lv[m] = [0, 0]); a[0]++; a[1] = Math.round((a[1] + pct) * 10) / 10; }
+                const u0 = users[currentUser], wk0 = weekKey(); let wp = u0.medals._wp; if (!wp || wp.w !== wk0) wp = u0.medals._wp = { w: wk0, perf: 0, games: 0 }; wp.perf += p.perfect || 0; wp.games++;
+                lastAdvice = adviceFor(s, kind);
+            } catch (e) { diag('stats', e && e.message || e); }
+            let qm = []; try { qm = questOnEvent(ctx); } catch (e) { diag('quest', e && e.message || e); }
+            const got = achCheck(ctx);
             const box = $a('result-ach');
-            if (box) { if (got.length) { box.innerHTML = got.map(a => '<div class="ach-pop">' + a.e + ' 解鎖成就「' + a.n + '」<span class="text-amber-600">+' + a.bonus + '</span></div>').join(''); box.classList.remove('hidden'); } else { box.innerHTML = ''; box.classList.add('hidden'); } }
+            if (box) { const h = qm.map(q => '<div class="ach-pop">' + q.e + ' ' + q.t + '<span class="text-amber-600">+' + q.bonus + '</span></div>').join('') + got.map(a => '<div class="ach-pop">' + a.e + ' 解鎖成就「' + a.n + '」<span class="text-amber-600">+' + a.bonus + '</span></div>').join(''); if (h) { box.innerHTML = h; box.classList.remove('hidden'); } else { box.innerHTML = ''; box.classList.add('hidden'); } }
             return got;
         }
         function renderAch() {
             const u = users[currentUser], got = (u && u.medals && u.medals.ach) || {}, s = stOf() || {}; let n = 0;
-            $a('ach-list').innerHTML = ACHS.map(a => {
-                const on = !!got[a.id]; if (on) n++; const pr = a.p && !on ? a.p(s) : null;
-                return '<div class="ach-card ' + (on ? 'ach-on' : 'ach-off') + '"><div class="ach-emoji">' + a.e + '</div><div class="flex-1 min-w-0"><div class="font-black text-sm">' + a.n + (on ? ' ✓' : '') + '</div><div class="text-xs font-bold opacity-70">' + a.d + '</div>' +
+            let advShown = false; $a('ach-list').innerHTML = ACHS.map(a => {
+                const on = !!got[a.id]; if (on) n++; const pr = a.p && !on ? a.p(s) : null; const dv = a.adv && !advShown ? (advShown = true, '<div class="text-sm font-black text-fuchsia-600 mt-2">🔥 進階成就（需要更多技巧或長期累積）</div>') : '';
+                return dv + '<div class="ach-card ' + (on ? 'ach-on' : 'ach-off') + '"><div class="ach-emoji">' + a.e + '</div><div class="flex-1 min-w-0"><div class="font-black text-sm">' + a.n + (on ? ' ✓' : '') + '</div><div class="text-xs font-bold opacity-70">' + a.d + '</div>' +
                     (pr ? '<div class="ach-bar"><div style="width:' + Math.round(pr[0] / pr[1] * 100) + '%"></div></div><div class="text-[10px] font-bold opacity-60">' + pr[0] + ' / ' + pr[1] + '</div>' : '') + '</div><div class="text-xs font-black text-amber-600 whitespace-nowrap">+' + a.bonus + '</div></div>';
             }).join('');
             $a('ach-count').textContent = n + ' / ' + ACHS.length;
         }
         $a('btn-open-ach').addEventListener('click', () => { if (isGameRunning || !currentUser) return; renderAch(); $a('ach-modal').classList.remove('hidden'); $a('ach-modal').classList.add('flex'); });
         $a('btn-close-ach').addEventListener('click', () => { $a('ach-modal').classList.add('hidden'); $a('ach-modal').classList.remove('flex'); });
+
+
+        // ================= 📅 每日任務／每週挑戰／🎖 段位／👹 魔王模式（資料都放在帳號的 medals 裡：_dq _wk _rk，會跟積分一起存雲端）=================
+        const nowD = () => new Date(window.__fakeNow || Date.now());
+        const dayKey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const weekKey = () => { const d = nowD(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return dayKey(d); };   // 該週星期一的日期
+        const hashStr = t => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+        const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+        // 任務定義：goal=目標、r=獎勵積分、inc(c)=這一場為進度加多少
+        const DQ_DEFS = {
+            games2:   { n: '完成 2 場挑戰', goal: 2, r: 50, inc: c => c.kind === 'game' ? 1 : 0 },
+            games3:   { n: '完成 3 場挑戰', goal: 3, r: 80, inc: c => c.kind === 'game' ? 1 : 0 },
+            song1:    { n: '完成 1 首歌曲', goal: 1, r: 70, inc: c => c.kind === 'game' && c.song ? 1 : 0 },
+            gold3:    { n: '打中 3 個金色音符', goal: 3, r: 90, inc: c => c.kind === 'game' ? (c.gold || 0) : 0 },
+            practice3: { n: '練習模式打 3 輪', goal: 3, r: 60, inc: c => c.kind === 'practice' ? 1 : 0 },
+            acc70:    { n: '單場成績 70% 以上', goal: 1, r: 60, inc: c => c.kind === 'game' && c.pct >= 70 ? 1 : 0 },
+            perfect60: { n: '今天累計打出 60 個 Perfect', goal: 60, r: 80, inc: c => c.kind === 'game' ? (c.perfects || 0) : 0 },
+            acc85:    { n: '單場成績 85% 以上（A）', goal: 1, r: 100, inc: c => c.kind === 'game' && c.pct >= 85 ? 1 : 0 },
+            combo30:  { n: '單場連擊達 30', goal: 1, r: 80, inc: c => c.kind === 'game' && c.maxCombo >= 30 ? 1 : 0 },
+            long12:   { n: '挑戰 12 小節以上並拿 70%', goal: 1, r: 90, inc: c => c.kind === 'game' && c.measures >= 12 && c.pct >= 70 ? 1 : 0 },
+            fast112:  { n: '速度 112 BPM 以上拿 70%', goal: 1, r: 100, inc: c => c.kind === 'game' && c.bpm >= 112 && c.pct >= 70 ? 1 : 0 },
+            nomiss:   { n: '一場一個 Miss 都沒有', goal: 1, r: 150, inc: c => c.kind === 'game' && c.misses === 0 && c.total >= 8 ? 1 : 0 },
+            combo50:  { n: '單場連擊達 50', goal: 1, r: 120, inc: c => c.kind === 'game' && c.maxCombo >= 50 ? 1 : 0 },
+            acc95:    { n: '單場成績 95% 以上（S）', goal: 1, r: 150, inc: c => c.kind === 'game' && c.pct >= 95 ? 1 : 0 },
+            boss1:    { n: '挑戰魔王模式（成績 50% 以上）', goal: 1, r: 150, inc: c => c.kind === 'game' && c.boss && c.pct >= 50 ? 1 : 0 }
+        };
+        const DQ_TIERS = [['games2', 'games3', 'practice3', 'acc70', 'perfect60', 'song1'], ['acc85', 'combo30', 'long12', 'fast112', 'gold3'], ['nomiss', 'combo50', 'acc95', 'boss1']];   // 每天各抽一項：簡單、中等、困難
+        let bossOn = false;
+        const bossUnlocked = () => { const s = stOf(); return !!s && (s.games || 0) >= ECON.BOSS_UNLOCK_GAMES; };
+        function getDq() {
+            const u = users[currentUser]; if (!u) return null; u.medals = u.medals || {}; const d = dayKey(nowD()); let q = u.medals._dq;
+            if (!q || q.d !== d || !Array.isArray(q.ids)) { const ids = DQ_TIERS.map((t, i) => { const pool = t.filter(id => (id !== 'boss1' || bossUnlocked()) && (id !== 'gold3' || opts.special)); return pool[hashStr(d + '|' + i) % pool.length]; }); q = u.medals._dq = { d, ids, p: {}, done: {}, all: 0 }; }
+            return q;
+        }
+        function getWk() {
+            const u = users[currentUser]; if (!u) return null; u.medals = u.medals || {}; const w = weekKey(); let k = u.medals._wk;
+            if (!k || k.w !== w) k = u.medals._wk = { w, got: [], best: 0 };
+            k.bpm = [88, 96, 104, 112, 120][hashStr('bpm' + w) % 5]; return k;
+        }
+        const WK_POOL = ['quarter', 'quarter', 'eighth', 'eighth', 'half', 'rest', 'sixteenth'];
+        const weeklySlots = w => fillRandomSlots(12, WK_POOL, mulberry(hashStr('wk' + w)));   // 同一週全班拿到一模一樣的譜
+        // 一個事件（打完一場 / 練習一輪）→ 更新每日任務與每週挑戰；回傳這次發出的獎勵（呼叫端負責 persistUser）
+        function questOnEvent(c) {
+            const u = users[currentUser]; if (!u) return []; const q = getDq(), s = stOf(), out = [];
+            const give = (e, t, b) => { u.points = (u.points || 0) + b; u.lifetime = (u.lifetime || 0) + b; out.push({ e, t, bonus: b }); };
+            q.ids.forEach(id => { if (q.done[id]) return; const df = DQ_DEFS[id], inc = df.inc(c) || 0; if (!inc) return; q.p[id] = Math.min(df.goal, (q.p[id] || 0) + inc); if (q.p[id] >= df.goal) { q.done[id] = 1; give('✅', '每日任務「' + df.n + '」', df.r); } });
+            if (!q.all && q.ids.every(id => q.done[id])) { q.all = 1; s.dqDays = (s.dqDays || 0) + 1; give('🎊', '今天的任務全部完成', ECON.DQ_ALL_BONUS); }
+            if (c.weekly) { const wk = getWk(); s.wkBest = Math.max(s.wkBest || 0, c.pct); if (c.pct > (wk.best || 0)) wk.best = Math.round(c.pct * 10) / 10; ECON.WK_TIERS.forEach(([th, r]) => { if (wk.best >= th && !wk.got.includes(th)) { wk.got.push(th); give('📅', '每週挑戰達成 ' + th + '%', r); } }); }
+            u.dirty = true; return out;
+        }
+        function questOnPractice() {
+            if (!currentUser || !users[currentUser]) return; const out = questOnEvent({ kind: 'practice' }); const got = achCheck({});
+            if (out.length || got.length) { persistUser(); updateWalletUI(); setTimeout(() => showToast((out[0] ? out[0].e + ' ' + out[0].t : '🏅 解鎖成就「' + got[0].n + '」') + ' +' + (out[0] ? out[0].bonus : got[0].bonus) + ' 積分', true), 3000); } else updateHomeQuest();
+        }
+        function rankInfo(lt) {
+            const R = ECON.RANKS; let ti = 0; for (let i = 0; i < R.length; i++) if (lt >= R[i][0]) ti = i;
+            const last = ti === R.length - 1; let sub = 0, prog = 1, toNext = 0, nextLabel = '';
+            if (!last) { const lo = R[ti][0], size = (R[ti + 1][0] - lo) / 3; sub = Math.min(2, Math.floor((lt - lo) / size)); prog = (lt - (lo + size * sub)) / size; toNext = Math.ceil(lo + size * (sub + 1) - lt); nextLabel = sub === 2 ? R[ti + 1][1] + ' III' : R[ti][1] + ' ' + ['III', 'II', 'I'][sub + 1]; }
+            return { ti, sub, idx: ti * 3 + sub, e: R[ti][2], label: R[ti][1] + (last ? '' : ' ' + ['III', 'II', 'I'][sub]), prog: Math.max(0, Math.min(1, prog)), toNext, last, nextLabel };
+        }
+        function rankCheck() {
+            const u = users[currentUser]; if (!u) return null; u.medals = u.medals || {}; const r = rankInfo(u.lifetime || 0), prev = u.medals._rk;
+            if (prev === undefined) { u.medals._rk = r.idx; return null; } if (r.idx > prev) { u.medals._rk = r.idx; u.dirty = true; return r; } return null;
+        }
+        function updateHomeQuest() {
+            try {
+                const u = users[currentUser]; if (!u) return; const q = getDq(), n = q.ids.filter(id => q.done[id]).length, e = $a('home-quest-prog'), r = rankInfo(u.lifetime || 0), hr = $a('home-rank');
+                if (e) e.textContent = (n === 3 ? '🎊 ' : '今日 ') + n + '/3'; if (hr) hr.textContent = r.e + ' ' + r.label;
+                if (u.medals._rk === undefined) u.medals._rk = r.idx;
+            } catch (e) {}
+        }
+        function renderQuests() {
+            const u = users[currentUser]; if (!u) return; const q = getDq(), wk = getWk(), r = rankInfo(u.lifetime || 0), s = stOf() || {};
+            let h = '<div class="bg-violet-50 border-2 border-violet-200 rounded-2xl p-3"><div class="flex items-center justify-between"><span class="text-2xl font-black text-violet-700">' + r.e + ' ' + r.label + '</span><span class="text-xs font-bold text-violet-500">累計 ' + (u.lifetime || 0).toLocaleString() + ' 分</span></div>' +
+                (r.last ? '<div class="text-xs font-black text-violet-600 mt-1">🎉 已經是最高段位「傳說」！</div>' : '<div class="ach-bar mt-1"><div style="width:' + Math.round(r.prog * 100) + '%"></div></div><div class="text-[11px] font-bold text-violet-500 mt-0.5">再 ' + r.toNext.toLocaleString() + ' 分升到「' + r.nextLabel + '」</div>') +
+                '<div class="text-[10px] font-bold text-slate-400 mt-1">段位看「累計賺到的積分」，花積分買東西不會降段 ' + ECON.RANKS.slice(1).map(x => x[2] + x[0].toLocaleString()).join(' ') + '</div></div>';
+            const dn = q.ids.filter(id => q.done[id]).length;
+            h += '<div><div class="flex items-center justify-between mb-1"><span class="font-black text-slate-700">📅 今日任務 <span class="text-xs text-slate-400">' + q.d + '</span></span><span class="font-black text-emerald-600">' + dn + ' / 3</span></div><div class="flex flex-col gap-2">' +
+                q.ids.map((id, i) => { const df = DQ_DEFS[id], on = !!q.done[id], pr = q.p[id] || 0; return '<div class="ach-card ' + (on ? 'ach-on' : 'ach-off') + '"><div class="ach-emoji">' + ['🟢', '🟠', '🔴'][i] + '</div><div class="flex-1 min-w-0"><div class="font-black text-sm">' + df.n + (on ? ' ✓' : '') + '</div>' + (id === 'gold3' && !on && !opts.special ? '<div class="text-[10px] font-bold text-rose-500">要先在音符設定開啟「✨ 特殊音符」才有金色音符</div>' : '') + (df.goal > 1 && !on ? '<div class="ach-bar"><div style="width:' + Math.round(pr / df.goal * 100) + '%"></div></div><div class="text-[10px] font-bold opacity-60">' + pr + ' / ' + df.goal + '</div>' : '') + '</div><div class="text-xs font-black text-amber-600 whitespace-nowrap">+' + df.r + '</div></div>'; }).join('') +
+                '</div><div class="text-xs font-bold text-slate-500 mt-1">' + (q.all ? '🎊 今天三項全部完成，額外 +' + ECON.DQ_ALL_BONUS + ' 已領！' : '三項全部完成再送 +' + ECON.DQ_ALL_BONUS + ' 積分。每天自動換新任務。') + '</div></div>';
+            const wl = ECON.WK_TIERS;
+            h += '<div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3"><div class="font-black text-sky-800">🏁 每週挑戰 <span class="text-xs text-slate-400">（本週 ' + wk.w + ' 起）</span></div><div class="text-xs font-bold text-slate-600 my-1">12 小節・' + wk.bpm + ' BPM・全班同一張譜，每週一換新。重打不限次數，用本週最高成績領獎。</div><div class="flex gap-1 mb-2">' +
+                wl.map(([th, rw]) => { const on = wk.got.includes(th); return '<div class="flex-1 text-center rounded-lg border-2 py-1 ' + (on ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : 'bg-white border-slate-200 text-slate-500') + '"><div class="font-black text-sm">' + th + '%' + (on ? ' ✓' : '') + '</div><div class="text-[11px] font-bold">+' + rw + '</div></div>'; }).join('') +
+                '</div><div class="text-xs font-bold text-slate-500 mb-2">本週最高：' + (wk.best ? fmtPct(wk.best) : '還沒挑戰') + '</div><button id="btn-wk-start" type="button" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-black text-lg py-2.5 rounded-xl shadow-md active:scale-95 border-b-4 border-sky-700">▶ 挑戰本週的譜</button></div>';
+            h += '<div id="class-card" class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3"><div class="font-black text-sky-800">🏫 班級挑戰</div><div class="text-xs font-bold text-slate-500 mt-1">載入中…</div></div>';
+            $a('quest-body').innerHTML = h;
+            try { fillClassCard(); } catch (e) { diag('class', e && e.message || e); }
+        }
+        const openM = id => { $a(id).classList.remove('hidden'); $a(id).classList.add('flex'); }, closeM = id => { $a(id).classList.add('hidden'); $a(id).classList.remove('flex'); };
+        const closeStart = () => closeM('start-modal');
+        function refreshBoss() {
+            const b = $a('boss-toggle'), lock = !bossUnlocked(), s = stOf() || {};
+            b.classList.toggle('opacity-60', lock); b.style.background = bossOn && !lock ? '#a21caf' : '';
+            b.innerHTML = lock ? '<div>🔒 魔王模式</div><div class="text-xs font-bold opacity-80">再完成 ' + Math.max(0, ECON.BOSS_UNLOCK_GAMES - (s.games || 0)) + ' 場挑戰就解鎖</div>' : '<div>👹 魔王模式：' + (bossOn ? '開 ✔' : '關') + '</div><div class="text-xs font-bold opacity-80">全是密集音符（不看音符設定）・積分 ×' + ECON.BOSS_MULT + '</div>';
+            const d = diffOf(BPM); $a('start-info').textContent = '速度 ' + BPM + ' BPM・' + (BPM > 154 ? '極速' : d[0]);
+        }
+        $a('btn-open-start').addEventListener('click', () => { if (isGameRunning || !currentUser) return; bossOn = false; refreshBoss(); openM('start-modal'); });
+        $a('btn-close-start').addEventListener('click', closeStart);
+        $a('boss-toggle').addEventListener('click', () => { if (!bossUnlocked()) { showToast('再完成 ' + Math.max(0, ECON.BOSS_UNLOCK_GAMES - ((stOf() || {}).games || 0)) + ' 場挑戰就能解鎖魔王模式'); return; } bossOn = !bossOn; refreshBoss(); });
+        const openQuest = () => { if (isGameRunning || !currentUser) return; renderQuests(); openM('quest-modal'); };
+        $a('btn-open-quest').addEventListener('click', openQuest); $a('home-rank').addEventListener('click', openQuest);
+        $a('btn-close-quest').addEventListener('click', () => closeM('quest-modal'));
+        $a('quest-body').addEventListener('click', e => { if (e.target.closest('#btn-wk-start')) startWeekly(); });
+        function startWeekly() {
+            if (isGameRunning || !currentUser) return; const wk = getWk(); closeM('quest-modal'); setPlayers(1); setBpm(wk.bpm);
+            runKind = 'weekly'; startChallenge(12, '📅 每週挑戰', weeklySlots(wk.w), null, false);
+        }
+
+        // ================= 🏫 班級挑戰・組隊週賽・老師儀表板（需要新版 Code.gs；舊版會自動優雅降級）=================
+        // 名字寫成「3年2班-小明」：「-」前面就是班級（小組）。
+        function groupOf(n) { const i = String(n).search(/[-－‐_]/); if (i < 1) return ''; const g = n.slice(0, i).trim(), r = n.slice(i + 1).trim(); return g && r && g.length <= 12 ? g : ''; }
+        let classInfo = null, classAt = 0, classTok = 0;
+        async function loadClass(force) {
+            if (!cloudOn() || !currentUser) return { off: true };
+            if (!force && classInfo && classInfo.for === currentUser && Date.now() - classAt < 60000) return classInfo;
+            const res = await fetchT(SCRIPT_URL + '?action=class&name=' + encodeURIComponent(currentUser) + '&w=' + weekKey()); const d = await res.json();
+            if (!d || !d.ok || !d.cls) return { unsupported: true };
+            classInfo = Object.assign({}, d, { for: currentUser }); classAt = Date.now(); return classInfo;
+        }
+        function classCardHtml(c) {
+            const u = users[currentUser], got = !!(u && u.medals && u.medals._cg), head = '<div class="font-black text-sky-800">🏫 班級挑戰・組隊週賽</div>';
+            if (c.off) return head + '<div class="text-xs font-bold text-slate-500 mt-1">沒有連上雲端，看不到班級資料。</div>';
+            if (c.unsupported) return head + '<div class="text-xs font-bold text-slate-500 mt-1">班級功能還沒啟用：請老師把新版 Code.gs 貼進 Apps Script 並重新部署。</div>';
+            if (!c.group) return head + '<div class="text-xs font-bold text-slate-600 mt-1">想加入班級？名字改成「<b>3年2班-小明</b>」（班級、一條橫線、名字），同班同學的 Perfect 就會一起累計！</div>';
+            const goal = c.goal || ECON.CLASS_GOAL, min = c.minMembers || ECON.CLASS_MIN_MEMBERS, tot = c.total || 0, pc = Math.min(100, Math.round(tot / goal * 100));
+            let h = head + '<div class="text-xs font-bold text-slate-600 mt-1">你的班級：<b>' + esc(c.group) + '</b>（' + (c.members || 0) + ' 人）</div>';
+            if ((c.members || 0) < min) h += '<div class="text-xs font-bold text-amber-700 mt-1">班上要有至少 ' + min + ' 位同學用同樣的班級名字，才會開始計算喔！</div>';
+            else {
+                h += '<div class="text-xs font-black text-slate-700 mt-2">🎯 全班累計 Perfect：' + tot.toLocaleString() + ' / ' + goal.toLocaleString() + '</div><div class="ach-bar"><div style="width:' + pc + '%"></div></div>';
+                if (got) h += '<div class="text-xs font-black text-emerald-600 mt-1">✅ 已領取：頭銜「全班一心」＋' + ECON.CLASS_GOAL_BONUS + ' 積分</div>';
+                else if (tot >= goal) h += '<button id="btn-class-claim" type="button" class="w-full mt-2 bg-amber-400 text-amber-950 font-black py-2 rounded-xl border-b-4 border-amber-600 active:scale-95">🎉 全班達標！領取頭銜＋' + ECON.CLASS_GOAL_BONUS + ' 積分</button>';
+                else h += '<div class="text-[11px] font-bold text-slate-500 mt-0.5">達標後每位同學可領 ' + ECON.CLASS_GOAL_BONUS + ' 積分＋專屬頭銜「全班一心」</div>';
+            }
+            const tm = c.teams || [];
+            if (tm.length) h += '<div class="text-xs font-black text-slate-700 mt-3 mb-1">🏁 本週組隊賽（各班本週 Perfect 合計）</div>' + tm.map((t, i) => '<div class="lb-row ' + (t.g === c.group ? 'lb-me' : '') + '"><span class="lb-rank">' + (['🥇', '🥈', '🥉'][i] || (i + 1)) + '</span><span class="flex-1 truncate font-black">' + esc(t.g) + '</span><span class="text-xs opacity-60 whitespace-nowrap">' + t.n + ' 人</span><span class="font-black text-sky-600 w-16 text-right">' + (t.wp || 0).toLocaleString() + '</span></div>').join('');
+            return h;
+        }
+        async function fillClassCard() {
+            const tok = ++classTok, el = $a('class-card'); if (!el) return;
+            let c; try { c = await loadClass(false); } catch (e) { c = null; }
+            if (tok !== classTok || !$a('class-card')) return;
+            $a('class-card').innerHTML = c ? classCardHtml(c) : '<div class="font-black text-sky-800">🏫 班級挑戰・組隊週賽</div><div class="text-xs font-bold text-slate-500 mt-1">連不上雲端，等一下再試試。</div>';
+        }
+        function claimClass() {
+            const u = users[currentUser]; if (!u || !classInfo || classInfo.for !== currentUser) return; u.medals = u.medals || {};
+            if (u.medals._cg || (classInfo.total || 0) < (classInfo.goal || ECON.CLASS_GOAL) || (classInfo.members || 0) < (classInfo.minMembers || ECON.CLASS_MIN_MEMBERS)) return;
+            u.medals._cg = classInfo.group; u.medals.ti_tc = true; const b = ECON.CLASS_GOAL_BONUS; u.points = (u.points || 0) + b; u.lifetime = (u.lifetime || 0) + b;
+            persistUser({ mode: '班級挑戰達標', score: 0, combo: 0, perfects: 0 }); updateWalletUI(); updateHomeQuest();
+            showToast('🎉 全班一心！＋' + b + ' 積分，解鎖頭銜「全班一心」', true); try { initAudio(); playVictoryFanfare(); } catch (e) {}
+            const el = $a('class-card'); if (el) el.innerHTML = classCardHtml(classInfo);
+        }
+        $a('quest-body').addEventListener('click', e => { if (e.target.closest('#btn-class-claim')) claimClass(); });
+
+        // --- 老師儀表板：連點首頁「版本」5 下 ---
+        const NT_NAME = { quarter: '四分音符', eighth: '八分音符', sixteenth: '十六分音符', half: '二分音符（長按）', 'dotted-half': '附點二分（長按）', whole: '全音符（長按）' };
+        let tapN = 0, tapT = 0, tData = null, tGroup = '';
+        $a('app-version').addEventListener('click', () => { if (isGameRunning) return; const t = Date.now(); tapN = t - tapT < 1200 ? tapN + 1 : 1; tapT = t; if (tapN >= 5) { tapN = 0; $a('t-body').innerHTML = ''; $a('t-note').textContent = cloudOn() ? '輸入老師密碼（在 Code.gs 的 TEACHER_PIN 設定）。' : '沒有連上雲端，沒有資料可看。'; tData = null; $a('t-login').classList.remove('hidden'); openM('teacher-modal'); } });
+        $a('btn-close-teacher').addEventListener('click', () => { closeM('teacher-modal'); $a('t-pin').value = ''; tData = null; $a('t-body').innerHTML = ''; });
+        const weakNt = nt => { let best = null; Object.keys(nt || {}).forEach(k => { const a = nt[k]; if (!a || a[0] < 20) return; const r = a[1] / a[0]; if (!best || r > best.r) best = { k, r }; }); return best; };
+        const avgLv = lv => { let n = 0, sum = 0; Object.keys(lv || {}).forEach(m => { n += lv[m][0] || 0; sum += lv[m][1] || 0; }); return n ? sum / n : null; };
+        function renderTeacher() {
+            if (!tData) return; const all = tData.rows || [], groups = Array.from(new Set(all.map(r => r.group).filter(Boolean))).sort();
+            const rows = all.filter(r => !tGroup || r.group === tGroup).sort((a, b) => (b.wp - a.wp) || (b.games - a.games));
+            const active = rows.filter(r => r.wg > 0).length, wpT = rows.reduce((x, r) => x + r.wp, 0), pT = rows.reduce((x, r) => x + r.perf, 0);
+            const ntA = {}, lvA = {}; rows.forEach(r => { Object.keys(r.nt || {}).forEach(k => { const a = ntA[k] || (ntA[k] = [0, 0]); a[0] += r.nt[k][0] || 0; a[1] += r.nt[k][1] || 0; }); Object.keys(r.lv || {}).forEach(m => { const a = lvA[m] || (lvA[m] = [0, 0]); a[0] += r.lv[m][0] || 0; a[1] += r.lv[m][1] || 0; }); });
+            const ntRows = Object.keys(ntA).filter(k => ntA[k][0] >= 20).map(k => ({ k, r: ntA[k][1] / ntA[k][0], n: ntA[k][0] })).sort((a, b) => b.r - a.r);
+            let h = '<div class="flex flex-wrap items-center gap-2 mb-2"><select id="t-group" class="border-2 border-slate-300 rounded-xl px-2 py-1 font-bold bg-white text-slate-800"><option value="">全部（' + all.length + ' 人）</option>' + groups.map(g => '<option value="' + esc(g) + '"' + (g === tGroup ? ' selected' : '') + '>' + esc(g) + '</option>').join('') + '</select><button id="t-csv" type="button" class="bg-emerald-500 text-white font-black px-3 py-1 rounded-xl border-b-4 border-emerald-700 active:scale-95 text-sm">⬇ 下載 CSV</button><button id="t-refresh" type="button" class="bg-slate-200 font-black px-3 py-1 rounded-xl text-sm active:scale-95">↻ 重新整理</button></div>';
+            h += '<div class="text-sm font-bold mb-2">共 <b>' + rows.length + '</b> 人・本週有玩 <b>' + active + '</b> 人・本週 Perfect <b>' + wpT.toLocaleString() + '</b>・累計 Perfect <b>' + pT.toLocaleString() + '</b></div>';
+            h += '<div class="grid sm:grid-cols-2 gap-2 mb-3"><div class="bg-rose-50 border-2 border-rose-200 rounded-xl p-2"><div class="font-black text-rose-700 text-sm mb-1">😵 最常漏掉的音符</div>' + (ntRows.length ? ntRows.slice(0, 5).map(x => '<div class="flex justify-between text-sm font-bold"><span>' + (NT_NAME[x.k] || esc(x.k)) + '</span><span>' + Math.round(x.r * 100) + '%（' + x.n + ' 個）</span></div>').join('') : '<div class="text-xs text-slate-500 font-bold">資料還不夠（每種音符要累積 20 個以上）</div>') + '</div>' +
+                '<div class="bg-sky-50 border-2 border-sky-200 rounded-xl p-2"><div class="font-black text-sky-700 text-sm mb-1">📊 各難度（小節數）平均成績</div>' + (Object.keys(lvA).length ? Object.keys(lvA).sort((a, b) => a - b).map(m => '<div class="flex justify-between text-sm font-bold"><span>' + m + ' 小節</span><span>' + (lvA[m][1] / lvA[m][0]).toFixed(1) + '%（' + lvA[m][0] + ' 場）</span></div>').join('') : '<div class="text-xs text-slate-500 font-bold">還沒有資料</div>') + '</div></div>';
+            h += '<div class="overflow-x-auto"><table class="w-full text-sm font-bold whitespace-nowrap"><thead><tr class="text-left text-slate-500 border-b-2 border-slate-200"><th class="py-1 pr-2">姓名</th><th class="pr-2">場數</th><th class="pr-2">本週P</th><th class="pr-2">累計P</th><th class="pr-2">平均</th><th class="pr-2">最常漏</th><th class="pr-2">卡關</th><th>最後上線</th></tr></thead><tbody>' +
+                rows.map(r => { const w = weakNt(r.nt), av = avgLv(r.lv); let st = null; Object.keys(r.lv || {}).forEach(m => { const a = r.lv[m]; if (a[0] >= 2) { const v = a[1] / a[0]; if (!st || v < st.v) st = { m, v }; } }); const days = r.last ? Math.floor((Date.now() - r.last) / 86400000) : null;
+                    return '<tr class="border-b border-slate-100"><td class="py-1 pr-2 text-slate-900">' + esc(r.name) + '</td><td class="pr-2">' + r.games + '</td><td class="pr-2">' + r.wp + '</td><td class="pr-2">' + r.perf + '</td><td class="pr-2">' + (av == null ? '–' : av.toFixed(0) + '%') + '</td><td class="pr-2">' + (w ? (NT_NAME[w.k] || esc(w.k)).replace('（長按）', '') + ' ' + Math.round(w.r * 100) + '%' : '–') + '</td><td class="pr-2">' + (st && st.v < 80 ? st.m + '小節 ' + st.v.toFixed(0) + '%' : '–') + '</td><td class="' + (days != null && days >= 7 ? 'text-rose-600' : '') + '">' + (days == null ? '–' : days === 0 ? '今天' : days + ' 天前') + '</td></tr>'; }).join('') + '</tbody></table></div>';
+            $a('t-body').innerHTML = h; $a('t-note').textContent = '「卡關」＝平均成績最低的難度（低於 80% 才顯示）；「最常漏」需累積 20 個音符以上。資料以學生最後一次存檔為準。';
+        }
+        async function loadTeacher() {
+            const pin = $a('t-pin').value.trim(); if (!pin) { $a('t-note').textContent = '請輸入密碼。'; return; } $a('t-note').textContent = '載入中…';
+            try {
+                const res = await fetchT(SCRIPT_URL + '?action=teacher&pin=' + encodeURIComponent(pin) + '&w=' + weekKey(), {}, 25000), d = await res.json();
+                if (d && d.ok && d.teacher) { tData = d; tGroup = ''; $a('t-login').classList.add('hidden'); renderTeacher(); return; }
+                const er = String((d && d.error) || ''); $a('t-note').textContent = er === 'bad pin' ? '密碼不對。' : er === 'teacher disabled' ? '老師功能還沒啟用：請在 Code.gs 設定 TEACHER_PIN 後重新部署。' : '老師功能還沒啟用：請把新版 Code.gs 貼進 Apps Script 並重新部署。';
+            } catch (e) { $a('t-note').textContent = '連不上雲端，等一下再試試。'; }
+        }
+        $a('t-go').addEventListener('click', loadTeacher); $a('t-pin').addEventListener('keydown', e => { if (e.key === 'Enter') loadTeacher(); });
+        $a('t-body').addEventListener('change', e => { if (e.target.id === 't-group') { tGroup = e.target.value; renderTeacher(); } });
+        $a('t-body').addEventListener('click', e => {
+            if (e.target.closest('#t-refresh')) { $a('t-login').classList.remove('hidden'); loadTeacher(); return; }
+            if (e.target.closest('#t-csv') && tData) {
+                const q = v => '"' + String(v).replace(/"/g, '""') + '"', lines = [['姓名', '班級', '場數', '本週Perfect', '累計Perfect', '累計積分', '平均成績%', '最常漏音符', '最常漏率%', '最後上線'].map(q).join(',')];
+                (tData.rows || []).filter(r => !tGroup || r.group === tGroup).forEach(r => { const w = weakNt(r.nt), av = avgLv(r.lv); lines.push([r.name, r.group, r.games, r.wp, r.perf, r.lifetime, av == null ? '' : av.toFixed(1), w ? (NT_NAME[w.k] || w.k) : '', w ? Math.round(w.r * 100) : '', r.last ? new Date(r.last).toLocaleString() : ''].map(q).join(',')); });
+                try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })); a.download = '節拍組合器_學生資料.csv'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); } catch (err) { showToast('這個瀏覽器無法下載'); }
+            }
+        });
 
         // ================= 🏆 排行榜（資料在 Google 試算表的「成績」分頁；老師要先更新 Apps Script）=================
         const LBQ_KEY = 'rhythmGame.lbq.v1', LB_TIERS = [['easy', '簡單'], ['mid', '中等'], ['hard', '難']], LB_MEAS = [6, 12, 18, 24, 30];
@@ -2229,7 +2705,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         const fetchT = (url, opt, ms = 9000) => { const c = new AbortController(), t = setTimeout(() => c.abort(), ms); return fetch(url, Object.assign({ signal: c.signal }, opt)).finally(() => clearTimeout(t)); };
         // 一場結束：只有「單人、一般挑戰」才會送；比舊紀錄差的由雲端程式自動忽略（所以老師清空成績表後，大家下一場又會重新上榜）
         function lbHook(pct) {
-            if (!cloudOn() || numPlayers !== 1 || currentIsCustomMode || practice.active || !currentUser || !(pct > 0)) return;
+            if (!cloudOn() || numPlayers !== 1 || currentIsCustomMode || (lastChallenge && lastChallenge.kind) || practice.active || !currentUser || !(pct > 0)) return;
             const m = lastChallenge && lastChallenge.measures; if (!LB_MEAS.includes(m)) return;
             const tier = diffOf(BPM)[1], pr = Math.round(pct * 10) / 10;
             const p = players[0], q = lbQ(); q.push({ action: 'score', username: currentUser, measures: m, tier, bpm: BPM, theme: currentTheme, pct: pr, perfects: p.perfect || 0, combo: p.maxCombo || 0 }); lbSaveQ(q);
@@ -2249,11 +2725,39 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             } finally { lbFlushing = false; }
         }
         function renderLbTabs() {
+            document.querySelectorAll('.lb-k').forEach(b => b.classList.toggle('opt-active', b.dataset.k === lbKind));
+            document.querySelectorAll('.lb-m,.lb-t').forEach(b => { if (b.parentElement) b.parentElement.classList.toggle('hidden', lbKind !== 'score'); });
+            const f = $a('lb-foot'); if (f) f.classList.toggle('hidden', lbKind !== 'score'); $a('lb-mine-wrap').classList.toggle('hidden', lbKind === 'score' || !groupOf(currentUser || ''));
             document.querySelectorAll('.lb-m').forEach(b => b.classList.toggle('opt-active', +b.dataset.v === lbSel.m));
             document.querySelectorAll('.lb-t').forEach(b => b.classList.toggle('opt-active', b.dataset.v === lbSel.t));
         }
         const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        let lbKind = 'score';
+        async function loadRanks() {
+            renderLbTabs(); const list = $a('lb-list'), note = $a('lb-note'); list.innerHTML = ''; note.textContent = '載入中…';
+            if (!cloudOn()) { note.textContent = '尚未連接雲端，沒有排行榜。'; return; }
+            const tok = ++lbTok, g = groupOf(currentUser), mine = $a('lb-mine').checked && g;
+            try {
+                const res = await fetchT(SCRIPT_URL + '?action=ranks&name=' + encodeURIComponent(currentUser) + (mine ? '&g=' + encodeURIComponent(g) : '')), d = await res.json();
+                if (tok !== lbTok) return;
+                if (!d || !d.ok || !d.ranks) { note.textContent = '段位榜／積分榜還沒啟用：請老師把新版 Code.gs 貼進 Apps Script 並重新部署。'; return; }
+                const rows = d.rows || [], total = d.total || rows.length;
+                if (!rows.length) { note.textContent = '還沒有人上榜。'; return; }
+                const medal = i => ['🥇', '🥈', '🥉'][i] || (i + 1), me = d.me;
+                note.textContent = (mine ? g + '・' : '全部同學・') + '共 ' + total + ' 人' + (me ? '・你是第 ' + me.rank + ' 名' : '') + '・比的是「累計賺到的積分」（花掉不扣）';
+                let h = '';
+                if (lbKind === 'rank') {
+                    const R = ECON.RANKS, cnt = R.map(() => 0); (d.lts || []).forEach(v => { cnt[rankInfo(v).ti]++; }); const mx = Math.max(1, ...cnt), my = me ? rankInfo(me.lt).ti : -1;
+                    h += '<div class="flex flex-col gap-1 mb-2">' + R.map((r, i) => [i, r]).reverse().map(([i, r]) => '<div class="flex items-center gap-2 text-sm font-black ' + (i === my ? 'text-sky-600' : '') + '"><span class="w-20 whitespace-nowrap">' + r[2] + ' ' + r[1] + '</span><div class="flex-1 h-3 rounded-full bg-slate-200 overflow-hidden"><div class="h-full rounded-full" style="width:' + Math.round(cnt[i] / mx * 100) + '%;background:' + (i === my ? '#0ea5e9' : '#94a3b8') + '"></div></div><span class="w-10 text-right">' + cnt[i] + ' 人</span></div>').join('') + '</div>';
+                }
+                const top = rows.slice(0, lbKind === 'rank' ? 10 : 20);
+                h += top.map((r, i) => '<div class="lb-row ' + (r.name === currentUser ? 'lb-me' : '') + '"><span class="lb-rank">' + medal(i) + '</span><span class="flex-1 truncate font-black">' + esc(r.name) + '</span>' + (lbKind === 'rank' ? '<span class="text-xs font-black whitespace-nowrap">' + rankInfo(r.lt).e + ' ' + esc(rankInfo(r.lt).label) + '</span>' : '<span class="font-black text-sky-600 text-right">' + (+r.lt || 0).toLocaleString() + ' 分</span>') + '</div>').join('');
+                if (me && me.rank > top.length) h += '<div class="text-center text-xs font-bold opacity-60 my-1">…</div><div class="lb-row lb-me"><span class="lb-rank">' + me.rank + '</span><span class="flex-1 truncate font-black">' + esc(currentUser) + '</span>' + (lbKind === 'rank' ? '<span class="text-xs font-black whitespace-nowrap">' + rankInfo(me.lt).e + ' ' + esc(rankInfo(me.lt).label) + '</span>' : '<span class="font-black text-sky-600 text-right">' + (+me.lt || 0).toLocaleString() + ' 分</span>') + '</div>';
+                list.innerHTML = h;
+            } catch (e) { if (tok === lbTok) note.textContent = '連不上雲端，等一下再試試。'; diag('lb-ranks', e && e.message || e); }
+        }
         async function loadLb() {
+            if (lbKind !== 'score') return loadRanks();
             renderLbTabs(); const list = $a('lb-list'), note = $a('lb-note'); list.innerHTML = ''; note.textContent = '載入中…';
             if (!cloudOn()) { note.textContent = '尚未連接雲端，沒有排行榜。'; return; }
             const my = lbSel.m + '-' + lbSel.t, tok = ++lbTok;
@@ -2272,6 +2776,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         let lbTok = 0;
         document.querySelectorAll('.lb-m').forEach(b => b.addEventListener('click', () => { lbSel.m = +b.dataset.v; loadLb(); }));
         document.querySelectorAll('.lb-t').forEach(b => b.addEventListener('click', () => { lbSel.t = b.dataset.v; loadLb(); }));
+        document.querySelectorAll('.lb-k').forEach(b => b.addEventListener('click', () => { lbKind = b.dataset.k; loadLb(); }));
+        $a('lb-mine').addEventListener('change', loadLb);
         $a('btn-lb-refresh').addEventListener('click', loadLb);
         $a('btn-open-lb').addEventListener('click', () => { if (isGameRunning) return; lbSel.t = diffOf(BPM)[1]; if (lastChallenge && LB_MEAS.includes(lastChallenge.measures)) lbSel.m = lastChallenge.measures; $a('lb-modal').classList.remove('hidden'); $a('lb-modal').classList.add('flex'); loadLb(); });
         $a('btn-close-lb').addEventListener('click', () => { lbTok++; $a('lb-modal').classList.add('hidden'); $a('lb-modal').classList.remove('flex'); });
@@ -2292,6 +2798,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 document.getElementById('result-difficulty-text').textContent = currentModeText || "挑戰模式";
                 const t = document.getElementById('result-title'), b1 = document.getElementById('result-1p'), b2 = document.getElementById('result-2p');
                 const pcts = players.map(finalPercent);
+                const coopRun = !!(lastChallenge && lastChallenge.coop && players.length === 2), teamPct = coopRun ? (pcts[0] + pcts[1]) / 2 : pcts[0];
+                lastAdvice = null; { const ra = document.getElementById('result-advice'); if (ra) ra.classList.add('hidden'); }
                 
                 if (numPlayers === 1) {
                     const p = players[0], pct = pcts[0], rk = rankOf(pct);
@@ -2310,11 +2818,11 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                     players.forEach((p, i) => { 
                         const elScore = document.getElementById(`r2-score-${i}`), rk = rankOf(pcts[i]);
                         if (elScore) elScore.innerHTML = `${fmtPct(pcts[i])}<span class="text-lg ml-1 font-black">${rk[1]}</span>`; 
-                        const win = (i===0 && a > b) || (i===1 && b > a); 
+                        const win = !coopRun && ((i===0 && a > b) || (i===1 && b > a)); 
                         const card = document.getElementById(`r2-card-${i}`);
                         if (card) { card.classList.toggle('scale-105', win); card.classList.toggle('ring-4', win); card.classList.toggle('ring-yellow-400', win); }
                     });
-                    t.textContent = Math.abs(a - b) < 0.05 ? '🤝 平手！' : (a > b ? '🏆 1P 獲勝！' : '🏆 2P 獲勝！');
+                    t.textContent = coopRun ? '🤝 合作成績 ' + fmtPct(teamPct) + '　' + rankOf(teamPct)[1] : (Math.abs(a - b) < 0.05 ? '🤝 平手！' : (a > b ? '🏆 1P 獲勝！' : '🏆 2P 獲勝！'));
                 }
 
                 const pText = document.getElementById('result-points');
@@ -2328,15 +2836,15 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                     users[currentUser].lifetime = users[currentUser].lifetime || 0;
 
                     // 積分 = 成績百分比 × 該模式的滿分積分（雙人模式以 1P 的成績計入帳號）
-                    const full = MODE_POINTS[lastChallenge?.measures] || 500;
-                    const earned = Math.round(pcts[0] / 100 * full);
+                    const full = (lastChallenge && lastChallenge.full) || MODE_POINTS[lastChallenge?.measures] || 500;
+                    const bossRun = !!(lastChallenge && lastChallenge.kind === 'boss'), earnedBase = Math.round(teamPct / 100 * full * (bossRun ? ECON.BOSS_MULT : 1)), goldN = coopRun ? Math.round(((players[0].goldHits || 0) + (players[1].goldHits || 0)) / 2) : (players[0].goldHits || 0), goldPts = goldN * Math.max(5, Math.round(full * 0.02)), earned = earnedBase + goldPts;
                     users[currentUser].points += earned; 
                     users[currentUser].lifetime += earned; 
-                    const achNew = (() => { try { return achOnGame(pcts); } catch (e) { diag('ach', e && e.message || e); return []; } })(); try { lbHook(pcts[0]); } catch (e) { diag('lb', e && e.message || e); }
-                    persistUser({ mode: currentModeText, score: Math.round(pcts[0] * 10) / 10, combo: players[0]?.maxCombo || 0, perfects: players[0]?.perfect || 0 }); updateWalletUI();
+                    const achNew = (() => { try { return achOnGame(coopRun ? [teamPct, pcts[1]] : pcts); } catch (e) { diag('ach', e && e.message || e); return []; } })(); try { lbHook(pcts[0]); } catch (e) { diag('lb', e && e.message || e); } const rkUp = (() => { try { return rankCheck(); } catch (e) { return null; } })();
+                    try { renderAdvice(); } catch (e) {} persistUser({ mode: currentModeText, score: Math.round(pcts[0] * 10) / 10, combo: players[0]?.maxCombo || 0, perfects: players[0]?.perfect || 0 }); updateWalletUI();
                     
                     const m = MEDALS.find(x => !users[currentUser].medals[x.id] && users[currentUser].points >= x.price);
-                    if (pText) pText.innerHTML = `💰 <span class="text-amber-600 font-black">+${earned.toLocaleString()}</span> 積分 <span class="opacity-80">(成績 ${fmtPct(pcts[0])})</span><div class="text-xs opacity-80 mt-0.5">此模式滿分 ${full.toLocaleString()} ・ 累計 ${users[currentUser].points.toLocaleString()}</div>` + (numPlayers === 2 ? `<div class="text-xs opacity-80">雙人模式以 1P 的成績計入帳號</div>` : '') + (m ? `<div class="text-emerald-600 mt-1">🎉 已可兌換「${m.name}」！</div>` : '');
+                    if (pText) pText.innerHTML = `💰 <span class="text-amber-600 font-black">+${earned.toLocaleString()}</span> 積分 <span class="opacity-80">(成績 ${fmtPct(pcts[0])})</span><div class="text-xs opacity-80 mt-0.5">此模式滿分 ${full.toLocaleString()} ・ 累計 ${users[currentUser].points.toLocaleString()}</div>` + (numPlayers === 2 ? `<div class="text-xs opacity-80">雙人模式以 1P 的成績計入帳號</div>` : '') + (bossRun ? `<div class="text-xs text-fuchsia-600 font-black">👹 魔王模式 ×${ECON.BOSS_MULT} 積分</div>` : '') + (goldN ? `<div class="text-xs text-yellow-600 font-black">⭐ 金色音符 ×${goldN}：+${goldPts}</div>` : '') + (rkUp ? `<div class="text-violet-600 mt-1">🎉 段位晉升：${rkUp.e} ${rkUp.label}！</div>` : '') + (m ? `<div class="text-emerald-600 mt-1">🎉 已可兌換「${m.name}」！</div>` : '');
                     
                 }
             } catch (error) { 
@@ -2354,8 +2862,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         let exitArmed = false, exitArmTimer = null; document.getElementById('btn-exit-game').addEventListener('click', () => { const btn = document.getElementById('btn-exit-game'); if (exitArmed) { exitArmed = false; clearTimeout(exitArmTimer); btn.classList.remove('bg-red-500', 'text-white'); exitGame(); return; } exitArmed = true; btn.classList.add('bg-red-500', 'text-white'); showToast('再按一次「✕」退出'); exitArmTimer = setTimeout(() => { exitArmed = false; btn.classList.remove('bg-red-500', 'text-white'); }, 2500); });
         
-        document.getElementById('btn-mode-editor').addEventListener('click', () => switchView('editor')); document.getElementById('btn-back-home').addEventListener('click', () => switchView('home')); document.querySelectorAll('.diff-btn').forEach(btn => btn.addEventListener('click', () => { startChallenge(parseInt(btn.dataset.measures), btn.querySelector('span').textContent, null, null, false); })); document.getElementById('btn-start-custom').addEventListener('click', () => { if (slots.every(s => s === null)) return showToast("請先放置卡片，或點擊隨機！"); startChallenge(4, "自訂譜面", slots, null, true); }); document.getElementById('btn-play-again').addEventListener('click', () => { document.getElementById('result-box').classList.remove('scale-100'); document.getElementById('result-box').classList.add('scale-90'); switchView('home'); }); document.getElementById('btn-retry').addEventListener('click', () => { if(!lastChallenge) return; document.getElementById('result-box').classList.remove('scale-100'); document.getElementById('result-box').classList.add('scale-90'); startChallenge(lastChallenge.measures, lastChallenge.title, null, lastChallenge.charts, lastChallenge.isCustom); }); document.querySelectorAll('.speed-down').forEach(btn => btn.addEventListener('click', () => stepBpm(-1))); document.querySelectorAll('.speed-up').forEach(btn => btn.addEventListener('click', () => stepBpm(1))); setBpm(96);
-        function setPlayers(n) { numPlayers = n; document.querySelectorAll('.players-btn').forEach(b => b.classList.toggle('players-active', parseInt(b.dataset.players) === n)); } document.querySelectorAll('.players-btn').forEach(btn => btn.addEventListener('click', () => setPlayers(parseInt(btn.dataset.players)))); setPlayers(1); renderEditorBoard();
+        document.getElementById('btn-mode-editor').addEventListener('click', () => switchView('editor')); document.getElementById('btn-back-home').addEventListener('click', () => switchView('home')); document.querySelectorAll('.diff-btn').forEach(btn => btn.addEventListener('click', () => { const boss = bossOn && bossUnlocked(); closeStart(); runKind = boss ? 'boss' : null; startChallenge(parseInt(btn.dataset.measures), btn.querySelector('span').textContent + (boss ? '・魔王' : ''), null, null, false); })); document.getElementById('btn-start-custom').addEventListener('click', () => { if (slots.every(s => s === null)) return showToast("請先放置卡片，或點擊隨機！"); startChallenge(4, "自訂譜面", slots, null, true); }); document.getElementById('btn-play-again').addEventListener('click', () => { document.getElementById('result-box').classList.remove('scale-100'); document.getElementById('result-box').classList.add('scale-90'); switchView('home'); }); document.getElementById('btn-retry').addEventListener('click', () => { if(!lastChallenge) return; document.getElementById('result-box').classList.remove('scale-100'); document.getElementById('result-box').classList.add('scale-90'); runKind = lastChallenge.kind || null; runSong = lastChallenge.song ? songById(lastChallenge.song) : null; startChallenge(lastChallenge.measures, lastChallenge.title, null, lastChallenge.charts, lastChallenge.isCustom); }); document.querySelectorAll('.speed-down').forEach(btn => btn.addEventListener('click', () => stepBpm(-1))); document.querySelectorAll('.speed-up').forEach(btn => btn.addEventListener('click', () => stepBpm(1))); setBpm(96);
+        function setPlayers(n) { numPlayers = n; if (n !== 2) coopMode = false; try { updateCoopBtn(); } catch (e) {} document.querySelectorAll('.players-btn').forEach(b => b.classList.toggle('players-active', parseInt(b.dataset.players) === n)); } document.querySelectorAll('.players-btn').forEach(btn => btn.addEventListener('click', () => setPlayers(parseInt(btn.dataset.players)))); setPlayers(1); renderEditorBoard();
 
         function updateWalletUI() { 
             if(!currentUser) return; 
@@ -2366,6 +2874,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             document.getElementById('home-wallet').textContent = `💰 ${(usr.points || 0).toLocaleString()} 分 ` + o; 
             document.getElementById('shop-balance').textContent = (usr.points || 0).toLocaleString(); 
             try { const a = curAv(), t = curTi(), ha = document.getElementById('home-avatar'), ht = document.getElementById('home-title'); if (ha) ha.textContent = a ? a.e : '👤'; if (ht) { ht.textContent = t ? t.name : ''; ht.classList.toggle('hidden', !t); } } catch (e) {}
+            try { updateHomeQuest(); } catch (e) {}
             try { syncThemeToOwner(); } catch (e) {}
         }
         
@@ -2415,7 +2924,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             { id: 't3', name: '音符獵人',   price: 1000 }, { id: 't4', name: '拍子精靈',   price: 1600 },
             { id: 't5', name: '旋律騎士',   price: 2500 }, { id: 't6', name: '節奏小英雄', price: 3500 },
             { id: 't7', name: '節拍達人',   price: 5000 }, { id: 't8', name: '音樂魔法師', price: 7500 },
-            { id: 't9', name: '傳說指揮家', price: 12000 }, { id: 't10', name: '節奏之神',  price: 20000 }
+            { id: 't9', name: '傳說指揮家', price: 12000 }, { id: 't10', name: '節奏之神',  price: 20000 },
+            { id: 'tc', name: '全班一心', price: 0, special: true }
         ];
         const AVATARS = [
             { id: 'a1', e: '🐶', price: 300 }, { id: 'a2', e: '🐱', price: 300 }, { id: 'a3', e: '🐰', price: 300 }, { id: 'a4', e: '🐸', price: 300 },
@@ -2444,7 +2954,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 return `<button data-k="${kind}" data-id="${id}" data-do="buy" class="fx-act px-3 py-1.5 rounded-xl bg-amber-400 text-amber-950 font-black text-sm border-b-4 border-amber-600 active:scale-95">💰 ${price.toLocaleString()}</button>`;
             };
             const try1 = (kind, id) => `<button data-k="${kind}" data-id="${id}" data-do="try" class="fx-act px-3 py-1.5 rounded-xl bg-white border-2 border-slate-300 text-slate-700 font-bold text-sm active:scale-95">試戴</button>`;
-            document.getElementById('title-list').innerHTML = TITLES.map(t => { const o = hasTi(t.id), on = !!cT && cT.id === t.id;
+            document.getElementById('title-list').innerHTML = TITLES.filter(t => !t.special || hasTi(t.id)).map(t => { const o = hasTi(t.id), on = !!cT && cT.id === t.id;
                 return `<div class="rounded-2xl border-2 ${on ? 'border-emerald-400' : 'border-amber-200'} bg-white p-2 flex items-center gap-2"><div class="flex-1 min-w-0 font-black text-slate-800 text-sm">【${t.name}】</div><div class="flex gap-1 items-center">${try1('ti', t.id)}${act('ti', t.id, t.price, o, on)}</div></div>`; }).join('');
             document.getElementById('avatar-list').innerHTML = AVATARS.map(a => { const o = hasAv(a.id), on = !!cA && cA.id === a.id;
                 return `<div class="rounded-2xl border-2 ${on ? 'border-emerald-400' : 'border-amber-200'} bg-white p-2 flex flex-col items-center gap-1"><div class="text-4xl leading-none">${a.e}</div><div class="flex gap-1 flex-wrap justify-center">${try1('av', a.id)}${act('av', a.id, a.price, o, on)}</div></div>`; }).join('');
