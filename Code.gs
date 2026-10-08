@@ -1,7 +1,7 @@
 // 動感節拍組合器 － 雲端帳號後端 (Google Apps Script)
 // 這份程式放在 GitHub，Apps Script 裡的「啟動程式」會自動抓最新版來執行（不要在這裡寫試算表 ID 和密碼：GitHub 是公開的）。
 // 每次修改這份程式，下面的 CODE_VERSION 都要 +1；推上 GitHub 後，在遊戲「老師模式」按「更新伺服器程式」就會生效。
-const CODE_VERSION = 1;
+const CODE_VERSION = 2;
 // 學生積分存在一份 Google 試算表：Users(每人一列) / Log(每次紀錄) / 排行榜(積分自動排序) / 成績(遊戲內排行榜：每人每種模式只留最佳成績)
 
 const USERS = 'Users';
@@ -77,6 +77,20 @@ function allUsers_(w) {
       last: +new Date(v[4]) || 0, lv: st.lv || {}, nt: st.nt || {} };
   }).filter(r => r.name);
 }
+// 名字 → [目前選用的頭像編號, 頭銜編號]（排行榜用；只算「真的買過」的；快取 60 秒）
+function deco_() {
+  const cache = CacheService.getScriptCache(), hit = cache.get('deco');
+  if (hit) { try { return JSON.parse(hit); } catch (err) {} }
+  const out = {}, sh = usersSheet_(), last = sh.getLastRow();
+  if (last >= 2) sh.getRange(2, 1, last - 1, 4).getValues().forEach(v => {
+    const n = String(v[0]); if (!n) return;
+    let m = {}; try { m = JSON.parse(v[3] || '{}'); } catch (err) {}
+    const a = m._av && m['av_' + m._av] ? String(m._av) : '', t = m._ti && m['ti_' + m._ti] ? String(m._ti) : '';
+    if (a || t) out[n] = [a, t];
+  });
+  try { cache.put('deco', JSON.stringify(out), 60); } catch (err) {}
+  return out;
+}
 // 各班彙總（快取 60 秒，避免全班同時開啟時一直重算）
 function groups_(w) {
   const cache = CacheService.getScriptCache(), key = 'grp:' + w, hit = cache.get(key);
@@ -130,6 +144,7 @@ function doGet(e) {
         if (String(v[9]) !== key) return;
         rows.push({ name: String(v[1]), pct: Number(v[6]) || 0, bpm: Number(v[4]) || 0, theme: String(v[5]), perfects: Number(v[7]) || 0, combo: Number(v[8]) || 0, t: +new Date(v[0]) || 0 });
       });
+      const dc = deco_(); rows.forEach(r => { const d = dc[r.name]; if (d) { r.a = d[0]; r.ti = d[1]; } });
     }
     rows.sort((a, b) => (b.pct - a.pct) || (a.t - b.t));
     return json_({ ok: true, lb: true, rows: rows.slice(0, 50) });
@@ -153,8 +168,8 @@ function doGet(e) {
       try { cache.put('ranks', JSON.stringify(all), 60); } catch (err) {}
     }
     const list = (g ? all.filter(x => groupOf_(x[0]) === g) : all.slice()).sort((a, b) => (b[1] - a[1]) || (a[0] < b[0] ? -1 : 1));
-    const idx = list.findIndex(x => x[0] === name);
-    return json_({ ok: true, ranks: true, group: g, total: list.length, rows: list.slice(0, 50).map(x => ({ name: x[0], lt: x[1] })),
+    const idx = list.findIndex(x => x[0] === name), deco = deco_();
+    return json_({ ok: true, ranks: true, group: g, total: list.length, rows: list.slice(0, 50).map(x => { const d = deco[x[0]]; return d ? { name: x[0], lt: x[1], a: d[0], ti: d[1] } : { name: x[0], lt: x[1] }; }),
       lts: list.slice(0, 2000).map(x => x[1]), me: idx >= 0 ? { rank: idx + 1, lt: list[idx][1] } : null });
   }
   // 老師儀表板：?action=teacher&pin=密碼&w=2026-10-05

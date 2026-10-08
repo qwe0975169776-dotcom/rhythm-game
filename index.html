@@ -912,7 +912,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             RANKS: [[0, '新芽', '🌱'], [1500, '銅牌', '🥉'], [5000, '銀牌', '🥈'], [12000, '金牌', '🥇'], [25000, '白金', '💠'], [45000, '鑽石', '💎'], [70000, '大師', '🔮'], [100000, '傳說', '👑']]   // [累計積分門檻, 名稱, 圖示]；除了最後一階，每階分 III、II、I 三小段
         };
         // 版本號：之後每次優化把這個數字 +1（首頁與診斷資訊都會跟著變）
-        const APP_VERSION = 22;
+        const APP_VERSION = 23;
         // 行動裝置：隨時把「真正看得到的高度」寫進 --app-h（網址列/工具列伸縮、轉向時都會更新）
         { const setH = () => { try { document.documentElement.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px'); } catch (e) {} };
           setH(); window.addEventListener('resize', setH); window.addEventListener('orientationchange', () => { setH(); setTimeout(setH, 300); }); window.addEventListener('pageshow', setH); }
@@ -2762,6 +2762,14 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         }
         const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         let lbKind = 'score';
+        // v23：排行榜名字旁顯示頭像和頭銜。別人的由伺服器帶來（a＝頭像編號、ti＝頭銜編號；舊版伺服器沒有就不顯示），自己的直接用本機選用的
+        const hasK = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+        function lbWho(r, isMe) {
+            let av = '', ti = '';
+            if (isMe) { const a = curAv(), t = curTi(); av = a ? a.e : ''; ti = t ? t.name : ''; }
+            else { if (r && r.a && hasK(AV_BY, r.a)) av = AV_BY[r.a].e; if (r && r.ti && hasK(TI_BY, r.ti)) ti = TI_BY[r.ti].name; }
+            return '<span class="flex-1 min-w-0"><span class="block truncate font-black">' + (av ? av + ' ' : '') + esc(isMe ? currentUser : r.name) + '</span>' + (ti ? '<span class="block truncate text-[11px] font-black text-amber-600 leading-tight">【' + esc(ti) + '】</span>' : '') + '</span>';
+        }
         async function loadRanks() {
             renderLbTabs(); const list = $a('lb-list'), note = $a('lb-note'); list.innerHTML = ''; note.textContent = '載入中…';
             if (!cloudOn()) { note.textContent = '尚未連接雲端，沒有排行榜。'; return; }
@@ -2780,8 +2788,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                     h += '<div class="flex flex-col gap-1 mb-2">' + R.map((r, i) => [i, r]).reverse().map(([i, r]) => '<div class="flex items-center gap-2 text-sm font-black ' + (i === my ? 'text-sky-600' : '') + '"><span class="w-20 whitespace-nowrap">' + r[2] + ' ' + r[1] + '</span><div class="flex-1 h-3 rounded-full bg-slate-200 overflow-hidden"><div class="h-full rounded-full" style="width:' + Math.round(cnt[i] / mx * 100) + '%;background:' + (i === my ? '#0ea5e9' : '#94a3b8') + '"></div></div><span class="w-10 text-right">' + cnt[i] + ' 人</span></div>').join('') + '</div>';
                 }
                 const top = rows.slice(0, lbKind === 'rank' ? 10 : 20);
-                h += top.map((r, i) => '<div class="lb-row ' + (r.name === currentUser ? 'lb-me' : '') + '"><span class="lb-rank">' + medal(i) + '</span><span class="flex-1 truncate font-black">' + esc(r.name) + '</span>' + (lbKind === 'rank' ? '<span class="text-xs font-black whitespace-nowrap">' + rankInfo(r.lt).e + ' ' + esc(rankInfo(r.lt).label) + '</span>' : '<span class="font-black text-sky-600 text-right">' + (+r.lt || 0).toLocaleString() + ' 分</span>') + '</div>').join('');
-                if (me && me.rank > top.length) h += '<div class="text-center text-xs font-bold opacity-60 my-1">…</div><div class="lb-row lb-me"><span class="lb-rank">' + me.rank + '</span><span class="flex-1 truncate font-black">' + esc(currentUser) + '</span>' + (lbKind === 'rank' ? '<span class="text-xs font-black whitespace-nowrap">' + rankInfo(me.lt).e + ' ' + esc(rankInfo(me.lt).label) + '</span>' : '<span class="font-black text-sky-600 text-right">' + (+me.lt || 0).toLocaleString() + ' 分</span>') + '</div>';
+                h += top.map((r, i) => '<div class="lb-row ' + (r.name === currentUser ? 'lb-me' : '') + '"><span class="lb-rank">' + medal(i) + '</span>' + lbWho(r, r.name === currentUser) + (lbKind === 'rank' ? '<span class="text-xs font-black whitespace-nowrap">' + rankInfo(r.lt).e + ' ' + esc(rankInfo(r.lt).label) + '</span>' : '<span class="font-black text-sky-600 text-right">' + (+r.lt || 0).toLocaleString() + ' 分</span>') + '</div>').join('');
+                if (me && me.rank > top.length) h += '<div class="text-center text-xs font-bold opacity-60 my-1">…</div><div class="lb-row lb-me"><span class="lb-rank">' + me.rank + '</span>' + lbWho({}, true) + (lbKind === 'rank' ? '<span class="text-xs font-black whitespace-nowrap">' + rankInfo(me.lt).e + ' ' + esc(rankInfo(me.lt).label) + '</span>' : '<span class="font-black text-sky-600 text-right">' + (+me.lt || 0).toLocaleString() + ' 分</span>') + '</div>';
                 list.innerHTML = h;
             } catch (e) { if (tok === lbTok) note.textContent = '連不上雲端，等一下再試試。'; diag('lb-ranks', e && e.message || e); }
         }
@@ -2798,8 +2806,8 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 const rows = d.rows || [];
                 if (!rows.length) { note.textContent = '這個組合還沒有人上榜，來當第一名吧！'; return; }
                 note.textContent = '前 ' + Math.min(rows.length, 10) + ' 名・每人只算自己的最佳成績';
-                list.innerHTML = rows.slice(0, 10).map((r, i) => '<div class="lb-row ' + (r.name === currentUser ? 'lb-me' : '') + '"><span class="lb-rank">' + (['🥇', '🥈', '🥉'][i] || (i + 1)) + '</span><span class="flex-1 truncate font-black">' + esc(r.name) + '</span><span class="text-xs opacity-60 whitespace-nowrap">' + esc(r.bpm) + ' BPM・' + esc((THEMES[r.theme] || {}).label || r.theme || '') + '</span><span class="font-black text-sky-600 w-16 text-right">' + fmtPct(+r.pct || 0) + '</span></div>').join('');
-                const mine = rows.findIndex(r => r.name === currentUser); if (mine >= 10) list.innerHTML += '<div class="text-center text-xs font-bold opacity-60 my-1">…</div><div class="lb-row lb-me"><span class="lb-rank">' + (mine + 1) + '</span><span class="flex-1 truncate font-black">' + esc(currentUser) + '</span><span class="font-black text-sky-600 w-16 text-right">' + fmtPct(+rows[mine].pct || 0) + '</span></div>';
+                list.innerHTML = rows.slice(0, 10).map((r, i) => '<div class="lb-row ' + (r.name === currentUser ? 'lb-me' : '') + '"><span class="lb-rank">' + (['🥇', '🥈', '🥉'][i] || (i + 1)) + '</span>' + lbWho(r, r.name === currentUser) + '<span class="text-xs opacity-60 whitespace-nowrap">' + esc(r.bpm) + ' BPM・' + esc((THEMES[r.theme] || {}).label || r.theme || '') + '</span><span class="font-black text-sky-600 w-16 text-right">' + fmtPct(+r.pct || 0) + '</span></div>').join('');
+                const mine = rows.findIndex(r => r.name === currentUser); if (mine >= 10) list.innerHTML += '<div class="text-center text-xs font-bold opacity-60 my-1">…</div><div class="lb-row lb-me"><span class="lb-rank">' + (mine + 1) + '</span>' + lbWho({}, true) + '<span class="font-black text-sky-600 w-16 text-right">' + fmtPct(+rows[mine].pct || 0) + '</span></div>';
             } catch (e) { if (tok === lbTok) note.textContent = '連不上雲端，等一下再試試。'; diag('lb-load', e && e.message || e); }
         }
         let lbTok = 0;
