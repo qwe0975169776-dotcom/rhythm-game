@@ -278,7 +278,14 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         .falling-note { position: absolute; width: 76%; left: 12%; height: 56px; border-radius: 14px; border-bottom-width: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.5rem; z-index: 10; transition: opacity 0.2s ease; box-shadow: 0 6px 12px rgba(0,0,0,0.3); pointer-events: none; }
         .falling-rest { opacity: 0.85; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.12) 10px, rgba(0,0,0,0.12) 20px); }
-        .hold-tail { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); width: 60%; height: min(calc(var(--hit-y, 420px) * var(--k, 1)), var(--track-h, 900px)); min-height: 8px; border-radius: 8px 8px 0 0; opacity: 0.6; z-index: -1; background-color: #94a3b8; box-shadow: inset 0 0 10px rgba(255,255,255,0.3); pointer-events: none; }
+        .hold-tail { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); width: 60%; height: calc(var(--hit-y, 420px) * var(--k, 1)); min-height: 8px; border-radius: 8px 8px 0 0; opacity: 0.6; z-index: -1; background-color: #94a3b8; box-shadow: inset 0 0 10px rgba(255,255,255,0.3); pointer-events: none; }
+        /* v20：每一拍一條白色刻度（從按下的位置往上數）＋尾巴頂端的「放開線」 */
+        .hold-tail { background-image: repeating-linear-gradient(to top, transparent 0, transparent calc(var(--hit-y, 420px) / 2.72 - 3px), rgba(255,255,255,.85) calc(var(--hit-y, 420px) / 2.72 - 3px), rgba(255,255,255,.85) calc(var(--hit-y, 420px) / 2.72)); }
+        .hold-end { position: absolute; left: -14%; width: 128%; height: 7px; bottom: calc(100% + var(--hit-y, 420px) * var(--k, 1) - 3px); background: #fff; border-radius: 4px; box-shadow: 0 0 10px #fff, 0 0 18px #f97316; pointer-events: none; z-index: 1; }
+        .hold-end::after { content: '放開'; position: absolute; left: 50%; bottom: 9px; transform: translateX(-50%); white-space: nowrap; font: 800 13px/1 system-ui, sans-serif; color: #fff; background: #f97316; border-radius: 10px; padding: 3px 9px; box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+        body.lowfx .hold-end { box-shadow: none; }
+        @keyframes relPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(249,115,22,.9); } 50% { box-shadow: 0 0 0 14px rgba(249,115,22,0); } }
+        .btn-hit.release-cue { outline: 5px solid #f97316; animation: relPulse .3s infinite; }
         .note-whole .hold-tail { background-color: #6366f1; } .note-dotted-half .hold-tail { background-color: #14b8a6; } .note-half .hold-tail { background-color: #10b981; }
         .holding-glow { filter: brightness(1.3) drop-shadow(0 0 15px rgba(250,204,21,0.8)); }
 
@@ -818,6 +825,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             <div class="text-6xl mb-4 animate-pulse">⏸️</div>
             <h2 class="text-4xl font-black text-white mb-8 tracking-widest">遊戲暫停</h2>
             <button id="btn-resume" class="bg-sky-500 hover:bg-sky-400 text-white font-bold text-2xl py-4 px-12 rounded-full shadow-[0_0_20px_rgba(14,165,233,0.6)] border-4 border-sky-300 active:scale-95 transition-transform mb-4">▶ 繼續遊戲</button>
+            <button id="btn-pause-retry" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xl py-3 px-10 rounded-full border-4 border-emerald-300 active:scale-95 transition-transform mb-5">🔁 再來一次</button>
             <button id="btn-pause-exit" class="text-gray-300 font-bold text-lg underline hover:text-white">回主選單</button>
         </div>
     </div>
@@ -888,7 +896,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             RANKS: [[0, '新芽', '🌱'], [1500, '銅牌', '🥉'], [5000, '銀牌', '🥈'], [12000, '金牌', '🥇'], [25000, '白金', '💠'], [45000, '鑽石', '💎'], [70000, '大師', '🔮'], [100000, '傳說', '👑']]   // [累計積分門檻, 名稱, 圖示]；除了最後一階，每階分 III、II、I 三小段
         };
         // 版本號：之後每次優化把這個數字 +1（首頁與診斷資訊都會跟著變）
-        const APP_VERSION = 19;
+        const APP_VERSION = 20;
         // 行動裝置：隨時把「真正看得到的高度」寫進 --app-h（網址列/工具列伸縮、轉向時都會更新）
         { const setH = () => { try { document.documentElement.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px'); } catch (e) {} };
           setH(); window.addEventListener('resize', setH); window.addEventListener('orientationchange', () => { setH(); setTimeout(setH, 300); }); window.addEventListener('pageshow', setH); }
@@ -2083,7 +2091,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 p.notes.forEach(note => {
                     const el = document.createElement('div'); el.className = 'falling-note'; note.class.split(' ').forEach(c => el.classList.add(c));
                     el.innerHTML = `<span class="font-music">${note.label}</span>`;
-                    if (note.isHold) { const tail = document.createElement('div'); tail.className = 'hold-tail'; tail.style.setProperty('--k', ((note.visualBeats * BEAT_DURATION) / FALL_DURATION).toFixed(4)); el.appendChild(tail); }
+                    if (note.isHold) { const tail = document.createElement('div'); tail.className = 'hold-tail'; const kk = ((note.visualBeats * BEAT_DURATION) / FALL_DURATION).toFixed(4); tail.style.setProperty('--k', kk); el.style.setProperty('--k', kk); el.appendChild(tail); const he = document.createElement('div'); he.className = 'hold-end'; el.appendChild(he); }
                     el.style.opacity = '0'; el.style.transform = 'translateY(-200px)';
                     note.el = el; frag.appendChild(el);
                 });
@@ -2112,6 +2120,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                         const tailProgress = 1 - ((note.targetTime - now) / FALL_DURATION);
                         if (note.el) note.el.style.transform = `translateY(${(tailProgress * hitLineY) - 28}px)`;
 
+                        if (note.endTime - now < 0.35 && note.endTime > now && p.isHolding && p.activeHoldNote === note) p.hitBtn.classList.add('release-cue'); else p.hitBtn.classList.remove('release-cue');
                         if (now >= note.endTime) { 
                             note.completed = true; 
                             if (note.el) { note.el.style.opacity = '0'; note.el.style.willChange = ''; }
@@ -2199,7 +2208,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         window.addEventListener('blur', () => players.forEach(p => { p.mouseDown = false; if (p.isHolding) handleHitInput(null, p, false); }));
         document.addEventListener('keydown', (e) => { if (!isGameRunning || e.repeat || players.length === 0 || isPaused) return; const k = e.key.toLowerCase(); if (numPlayers === 1 && (k === ' ' || k === 'a')) { e.preventDefault(); handleHitInput(e, players[0], true); } else if (k === 'a') { e.preventDefault(); handleHitInput(e, players[0], true); } else if (k === 'l') { e.preventDefault(); handleHitInput(e, players[1], true); } });
         document.addEventListener('keyup', (e) => { if (!isGameRunning || players.length === 0 || isPaused) return; const k = e.key.toLowerCase(); if (numPlayers === 1 && (k === ' ' || k === 'a')) { e.preventDefault(); handleHitInput(e, players[0], false); } else if (k === 'a') { e.preventDefault(); handleHitInput(e, players[0], false); } else if (k === 'l') { e.preventDefault(); handleHitInput(e, players[1], false); } });
-        document.getElementById('btn-pause-game').addEventListener('click', () => { if(!isGameRunning) return; isPaused = !isPaused; if(isPaused) { audioCtx.suspend(); document.getElementById('pause-overlay').classList.remove('hidden'); document.getElementById('pause-overlay').classList.add('flex'); } });
+        document.getElementById('btn-pause-game').addEventListener('click', () => { if(!isGameRunning) return; isPaused = !isPaused; if(isPaused) { audioCtx.suspend(); document.getElementById('btn-pause-retry').classList.toggle('hidden', !!practice.active || !lastChallenge); document.getElementById('pause-overlay').classList.remove('hidden'); document.getElementById('pause-overlay').classList.add('flex'); } });
         document.getElementById('btn-resume').addEventListener('click', () => { isPaused = false; audioCtx.resume(); document.getElementById('pause-overlay').classList.add('hidden'); document.getElementById('pause-overlay').classList.remove('flex'); });
 
         // ================= 🔊 音量／靜音、旋律伴奏平衡、延遲校正、診斷 =================
@@ -2859,6 +2868,21 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
         function exitGame() { try { if (isGameRunning) addPlaySec(false); } catch (e) {} practice.active = false; isGameRunning = false; isPaused = false; gameSession++; cancelAnimationFrame(gameAnimationFrame); countdownTimers.forEach(clearTimeout); countdownTimers=[]; particles=[]; if (players[0]) players[0].isHolding = false; if (players[1]) players[1].isHolding = false; stopMusic(); trackObservers.forEach(o => o.disconnect()); trackObservers = []; players=[]; document.getElementById('players-wrap').innerHTML = ''; switchView('home'); }
         document.getElementById('btn-pause-exit').addEventListener('click', exitGame);
+        // v20：暫停時直接「再來一次」（同一份譜、同樣速度與主題）。清理方式和 exitGame 相同，但不回首頁，接著走和結算畫面「再來一次」同一條開局流程
+        function retryFromPause() {
+            if (!isGameRunning || practice.active || !lastChallenge || startBusy) return;
+            const lc = lastChallenge;
+            try { addPlaySec(false); } catch (e) {}
+            isGameRunning = false; isPaused = false; gameSession++; cancelAnimationFrame(gameAnimationFrame); countdownTimers.forEach(clearTimeout); countdownTimers = []; particles = [];
+            players.forEach(p => { p.isHolding = false; try { p.hitBtn.classList.remove('release-cue'); } catch (e) {} });
+            try { stopMusic(); } catch (e) {}
+            trackObservers.forEach(o => o.disconnect()); trackObservers = [];
+            document.getElementById('pause-overlay').classList.add('hidden'); document.getElementById('pause-overlay').classList.remove('flex');
+            try { audioCtx.resume(); } catch (e) {}
+            runKind = lc.kind || null; runSong = lc.song ? songById(lc.song) : null;
+            startChallenge(lc.measures, lc.title, null, lc.charts, lc.isCustom);
+        }
+        document.getElementById('btn-pause-retry').addEventListener('click', retryFromPause);
 
         let exitArmed = false, exitArmTimer = null; document.getElementById('btn-exit-game').addEventListener('click', () => { const btn = document.getElementById('btn-exit-game'); if (exitArmed) { exitArmed = false; clearTimeout(exitArmTimer); btn.classList.remove('bg-red-500', 'text-white'); exitGame(); return; } exitArmed = true; btn.classList.add('bg-red-500', 'text-white'); showToast('再按一次「✕」退出'); exitArmTimer = setTimeout(() => { exitArmed = false; btn.classList.remove('bg-red-500', 'text-white'); }, 2500); });
         
