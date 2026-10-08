@@ -287,6 +287,11 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         @keyframes relPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(249,115,22,.9); } 50% { box-shadow: 0 0 0 14px rgba(249,115,22,0); } }
         .btn-hit.release-cue { outline: 5px solid #f97316; animation: relPulse .3s infinite; }
         .note-whole .hold-tail { background-color: #6366f1; } .note-dotted-half .hold-tail { background-color: #14b8a6; } .note-half .hold-tail { background-color: #10b981; }
+
+        /* v21：老師鎖定的模式／商品 */
+        .tm-lock { position: relative; filter: grayscale(.85); opacity: .55; }
+        .tm-lock::after { content: '🔒'; position: absolute; right: 6px; top: 2px; font-size: 1.15em; filter: none; }
+        #tm-body input[type=number] { width: 5.5rem; }
         .holding-glow { filter: brightness(1.3) drop-shadow(0 0 15px rgba(250,204,21,0.8)); }
 
         @keyframes floatUpFade { 0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; } 20% { transform: translate(-50%, -16px) scale(1.15); opacity: 1; } 100% { transform: translate(-50%, -55px) scale(1); opacity: 0; } }
@@ -643,6 +648,17 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         </div>
     </div>
 
+
+    <!-- 老師模式（連點首頁「版本」5 下） -->
+    <div id="tm-modal" class="fixed inset-0 bg-black/70 z-[115] hidden flex-col items-center justify-center p-3">
+        <div class="bg-white text-slate-800 rounded-3xl p-4 w-full max-w-3xl shadow-2xl relative border-4 border-slate-200 flex flex-col" style="max-height:94vh">
+            <div class="flex items-center justify-between mb-2"><h2 class="text-xl font-black">🔧 老師模式</h2><button id="tm-close" type="button" class="text-2xl font-black px-2 text-slate-500">✕</button></div>
+            <div id="tm-login" class="flex gap-2 mb-2"><input id="tm-pin" type="password" inputmode="numeric" autocomplete="off" placeholder="老師密碼" class="flex-1 border-2 border-slate-300 rounded-xl px-3 py-2 font-bold bg-white text-slate-800"><button id="tm-go" type="button" class="bg-sky-500 text-white font-black px-4 rounded-xl border-b-4 border-sky-700 active:scale-95">進入</button></div>
+            <div id="tm-note" class="text-xs font-bold text-slate-500 mb-2"></div>
+            <div id="tm-body" class="overflow-y-auto flex-1 hidden"></div>
+        </div>
+    </div>
+
     <!-- 成就彈窗 -->
     <div id="ach-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex-col items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl relative border-4 border-slate-200 flex flex-col" style="max-height:90vh">
@@ -896,7 +912,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             RANKS: [[0, '新芽', '🌱'], [1500, '銅牌', '🥉'], [5000, '銀牌', '🥈'], [12000, '金牌', '🥇'], [25000, '白金', '💠'], [45000, '鑽石', '💎'], [70000, '大師', '🔮'], [100000, '傳說', '👑']]   // [累計積分門檻, 名稱, 圖示]；除了最後一階，每階分 III、II、I 三小段
         };
         // 版本號：之後每次優化把這個數字 +1（首頁與診斷資訊都會跟著變）
-        const APP_VERSION = 20;
+        const APP_VERSION = 21;
         // 行動裝置：隨時把「真正看得到的高度」寫進 --app-h（網址列/工具列伸縮、轉向時都會更新）
         { const setH = () => { try { document.documentElement.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px'); } catch (e) {} };
           setH(); window.addEventListener('resize', setH); window.addEventListener('orientationchange', () => { setH(); setTimeout(setH, 300); }); window.addEventListener('pageshow', setH); }
@@ -999,8 +1015,10 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         async function loginUser(name) {
             name = name.trim();
             if (!name) { showToast('請輸入名字喔！'); return; }
+            if (name.startsWith('__')) { showToast('這個名字不能用，換一個吧'); return; }
             if (!users[name]) users[name] = newUser();
             currentUser = name; saveUsers(); hideLoginModal(); updateWalletUI();
+            try { tmPull(true); } catch (e) {}
             const st = await pullUser(name);
             if (st === 'offline') showToast(`歡迎，${name}！目前連不上雲端，積分先存在本機`);
             else showToast(st === 'cloud' ? `歡迎，${name}！積分已同步` : `歡迎，${name}！`, true);
@@ -2495,8 +2513,9 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 const u0 = users[currentUser], wk0 = weekKey(); let wp = u0.medals._wp; if (!wp || wp.w !== wk0) wp = u0.medals._wp = { w: wk0, perf: 0, games: 0 }; wp.perf += p.perfect || 0; wp.games++;
                 lastAdvice = adviceFor(s, kind);
             } catch (e) { diag('stats', e && e.message || e); }
-            let qm = []; try { qm = questOnEvent(ctx); } catch (e) { diag('quest', e && e.message || e); }
-            const got = achCheck(ctx);
+            const paidRun = tmPays(pct);   // v21：成績沒達門檻的那一場，連成就／任務獎勵都不發（回到達標的場次才會算）
+            let qm = []; if (paidRun) try { qm = questOnEvent(ctx); } catch (e) { diag('quest', e && e.message || e); }
+            const got = paidRun ? achCheck(ctx) : [];
             const box = $a('result-ach');
             if (box) { const h = qm.map(q => '<div class="ach-pop">' + q.e + ' ' + q.t + '<span class="text-amber-600">+' + q.bonus + '</span></div>').join('') + got.map(a => '<div class="ach-pop">' + a.e + ' 解鎖成就「' + a.n + '」<span class="text-amber-600">+' + a.bonus + '</span></div>').join(''); if (h) { box.innerHTML = h; box.classList.remove('hidden'); } else { box.innerHTML = ''; box.classList.add('hidden'); } }
             return got;
@@ -2606,7 +2625,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             const b = $a('boss-toggle'), lock = !bossUnlocked(), s = stOf() || {};
             b.classList.toggle('opacity-60', lock); b.style.background = bossOn && !lock ? '#a21caf' : '';
             b.innerHTML = lock ? '<div>🔒 魔王模式</div><div class="text-xs font-bold opacity-80">再完成 ' + Math.max(0, ECON.BOSS_UNLOCK_GAMES - (s.games || 0)) + ' 場挑戰就解鎖</div>' : '<div>👹 魔王模式：' + (bossOn ? '開 ✔' : '關') + '</div><div class="text-xs font-bold opacity-80">全是密集音符（不看音符設定）・積分 ×' + ECON.BOSS_MULT + '</div>';
-            const d = diffOf(BPM); $a('start-info').textContent = '速度 ' + BPM + ' BPM・' + (BPM > 154 ? '極速' : d[0]);
+            const d = diffOf(BPM); $a('start-info').textContent = '速度 ' + BPM + ' BPM・' + (BPM > 154 ? '極速' : d[0]) + (TM.thr > 0 ? '・成績達 ' + TM.thr + '% 才有積分' : '');
         }
         $a('btn-open-start').addEventListener('click', () => { if (isGameRunning || !currentUser) return; bossOn = false; refreshBoss(); openM('start-modal'); });
         $a('btn-close-start').addEventListener('click', closeStart);
@@ -2668,12 +2687,13 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
         // --- 老師儀表板：連點首頁「版本」5 下 ---
         const NT_NAME = { quarter: '四分音符', eighth: '八分音符', sixteenth: '十六分音符', half: '二分音符（長按）', 'dotted-half': '附點二分（長按）', whole: '全音符（長按）' };
         let tapN = 0, tapT = 0, tData = null, tGroup = '';
-        $a('app-version').addEventListener('click', () => { if (isGameRunning) return; const t = Date.now(); tapN = t - tapT < 1200 ? tapN + 1 : 1; tapT = t; if (tapN >= 5) { tapN = 0; $a('t-body').innerHTML = ''; $a('t-note').textContent = cloudOn() ? '輸入老師密碼（在 Code.gs 的 TEACHER_PIN 設定）。' : '沒有連上雲端，沒有資料可看。'; tData = null; $a('t-login').classList.remove('hidden'); openM('teacher-modal'); } });
+        $a('app-version').addEventListener('click', () => { if (isGameRunning) return; const t = Date.now(); tapN = t - tapT < 1200 ? tapN + 1 : 1; tapT = t; if (tapN >= 5) { tapN = 0; tmOpen(); } });
+        function openDash() { $a('t-body').innerHTML = ''; $a('t-note').textContent = cloudOn() ? '輸入老師密碼（在 Code.gs 的 TEACHER_PIN 設定）。' : '沒有連上雲端，沒有資料可看。'; tData = null; $a('t-login').classList.remove('hidden'); openM('teacher-modal'); }
         $a('btn-close-teacher').addEventListener('click', () => { closeM('teacher-modal'); $a('t-pin').value = ''; tData = null; $a('t-body').innerHTML = ''; });
         const weakNt = nt => { let best = null; Object.keys(nt || {}).forEach(k => { const a = nt[k]; if (!a || a[0] < 20) return; const r = a[1] / a[0]; if (!best || r > best.r) best = { k, r }; }); return best; };
         const avgLv = lv => { let n = 0, sum = 0; Object.keys(lv || {}).forEach(m => { n += lv[m][0] || 0; sum += lv[m][1] || 0; }); return n ? sum / n : null; };
         function renderTeacher() {
-            if (!tData) return; const all = tData.rows || [], groups = Array.from(new Set(all.map(r => r.group).filter(Boolean))).sort();
+            if (!tData) return; const all = (tData.rows || []).filter(r => !String(r.name).startsWith('__')), groups = Array.from(new Set(all.map(r => r.group).filter(Boolean))).sort();
             const rows = all.filter(r => !tGroup || r.group === tGroup).sort((a, b) => (b.wp - a.wp) || (b.games - a.games));
             const active = rows.filter(r => r.wg > 0).length, wpT = rows.reduce((x, r) => x + r.wp, 0), pT = rows.reduce((x, r) => x + r.perf, 0);
             const ntA = {}, lvA = {}; rows.forEach(r => { Object.keys(r.nt || {}).forEach(k => { const a = ntA[k] || (ntA[k] = [0, 0]); a[0] += r.nt[k][0] || 0; a[1] += r.nt[k][1] || 0; }); Object.keys(r.lv || {}).forEach(m => { const a = lvA[m] || (lvA[m] = [0, 0]); a[0] += r.lv[m][0] || 0; a[1] += r.lv[m][1] || 0; }); });
@@ -2701,7 +2721,7 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
             if (e.target.closest('#t-refresh')) { $a('t-login').classList.remove('hidden'); loadTeacher(); return; }
             if (e.target.closest('#t-csv') && tData) {
                 const q = v => '"' + String(v).replace(/"/g, '""') + '"', lines = [['姓名', '班級', '場數', '本週Perfect', '累計Perfect', '累計積分', '平均成績%', '最常漏音符', '最常漏率%', '最後上線'].map(q).join(',')];
-                (tData.rows || []).filter(r => !tGroup || r.group === tGroup).forEach(r => { const w = weakNt(r.nt), av = avgLv(r.lv); lines.push([r.name, r.group, r.games, r.wp, r.perf, r.lifetime, av == null ? '' : av.toFixed(1), w ? (NT_NAME[w.k] || w.k) : '', w ? Math.round(w.r * 100) : '', r.last ? new Date(r.last).toLocaleString() : ''].map(q).join(',')); });
+                (tData.rows || []).filter(r => !String(r.name).startsWith('__') && (!tGroup || r.group === tGroup)).forEach(r => { const w = weakNt(r.nt), av = avgLv(r.lv); lines.push([r.name, r.group, r.games, r.wp, r.perf, r.lifetime, av == null ? '' : av.toFixed(1), w ? (NT_NAME[w.k] || w.k) : '', w ? Math.round(w.r * 100) : '', r.last ? new Date(r.last).toLocaleString() : ''].map(q).join(',')); });
                 try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })); a.download = '節拍組合器_學生資料.csv'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); } catch (err) { showToast('這個瀏覽器無法下載'); }
             }
         });
@@ -2846,14 +2866,14 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
 
                     // 積分 = 成績百分比 × 該模式的滿分積分（雙人模式以 1P 的成績計入帳號）
                     const full = (lastChallenge && lastChallenge.full) || MODE_POINTS[lastChallenge?.measures] || 500;
-                    const bossRun = !!(lastChallenge && lastChallenge.kind === 'boss'), earnedBase = Math.round(teamPct / 100 * full * (bossRun ? ECON.BOSS_MULT : 1)), goldN = coopRun ? Math.round(((players[0].goldHits || 0) + (players[1].goldHits || 0)) / 2) : (players[0].goldHits || 0), goldPts = goldN * Math.max(5, Math.round(full * 0.02)), earned = earnedBase + goldPts;
+                    const bossRun = !!(lastChallenge && lastChallenge.kind === 'boss'), earnedBase = Math.round(teamPct / 100 * full * (bossRun ? ECON.BOSS_MULT : 1)), goldN = coopRun ? Math.round(((players[0].goldHits || 0) + (players[1].goldHits || 0)) / 2) : (players[0].goldHits || 0), goldPts = goldN * Math.max(5, Math.round(full * 0.02)), paid = tmPays(teamPct), earned = paid ? earnedBase + goldPts : 0;
                     users[currentUser].points += earned; 
                     users[currentUser].lifetime += earned; 
                     const achNew = (() => { try { return achOnGame(coopRun ? [teamPct, pcts[1]] : pcts); } catch (e) { diag('ach', e && e.message || e); return []; } })(); try { lbHook(pcts[0]); } catch (e) { diag('lb', e && e.message || e); } const rkUp = (() => { try { return rankCheck(); } catch (e) { return null; } })();
                     try { renderAdvice(); } catch (e) {} persistUser({ mode: currentModeText, score: Math.round(pcts[0] * 10) / 10, combo: players[0]?.maxCombo || 0, perfects: players[0]?.perfect || 0 }); updateWalletUI();
                     
                     const m = MEDALS.find(x => !users[currentUser].medals[x.id] && users[currentUser].points >= x.price);
-                    if (pText) pText.innerHTML = `💰 <span class="text-amber-600 font-black">+${earned.toLocaleString()}</span> 積分 <span class="opacity-80">(成績 ${fmtPct(pcts[0])})</span><div class="text-xs opacity-80 mt-0.5">此模式滿分 ${full.toLocaleString()} ・ 累計 ${users[currentUser].points.toLocaleString()}</div>` + (numPlayers === 2 ? `<div class="text-xs opacity-80">雙人模式以 1P 的成績計入帳號</div>` : '') + (bossRun ? `<div class="text-xs text-fuchsia-600 font-black">👹 魔王模式 ×${ECON.BOSS_MULT} 積分</div>` : '') + (goldN ? `<div class="text-xs text-yellow-600 font-black">⭐ 金色音符 ×${goldN}：+${goldPts}</div>` : '') + (rkUp ? `<div class="text-violet-600 mt-1">🎉 段位晉升：${rkUp.e} ${rkUp.label}！</div>` : '') + (m ? `<div class="text-emerald-600 mt-1">🎉 已可兌換「${m.name}」！</div>` : '');
+                    if (pText) pText.innerHTML = `💰 <span class="text-amber-600 font-black">+${earned.toLocaleString()}</span> 積分 <span class="opacity-80">(成績 ${fmtPct(pcts[0])})</span><div class="text-xs opacity-80 mt-0.5">此模式滿分 ${full.toLocaleString()} ・ 累計 ${users[currentUser].points.toLocaleString()}</div>` + (paid ? '' : `<div class="text-xs text-rose-600 font-black mt-0.5">⚠ 成績要達到 ${TM.thr}% 才有積分（成就、任務獎勵也一樣），再挑戰一次吧！</div>`) + (numPlayers === 2 ? `<div class="text-xs opacity-80">雙人模式以 1P 的成績計入帳號</div>` : '') + (bossRun && paid ? `<div class="text-xs text-fuchsia-600 font-black">👹 魔王模式 ×${ECON.BOSS_MULT} 積分</div>` : '') + (goldN && paid ? `<div class="text-xs text-yellow-600 font-black">⭐ 金色音符 ×${goldN}：+${goldPts}</div>` : '') + (rkUp ? `<div class="text-violet-600 mt-1">🎉 段位晉升：${rkUp.e} ${rkUp.label}！</div>` : '') + (m ? `<div class="text-emerald-600 mt-1">🎉 已可兌換「${m.name}」！</div>` : '');
                     
                 }
             } catch (error) { 
@@ -3106,6 +3126,96 @@ var Tone=(()=>{var Ii=Object.defineProperty;var Zn=Object.getOwnPropertyDescript
                 showToast(`解鎖「${t.label}」並套用！`, true); try { initAudio(); playVictoryFanfare(); } catch (err) {}
             }
         });
+
+        // ================= 🔧 老師模式：成績門檻、鎖定模式、商店鎖定與改價（連點首頁「版本」5 下，密碼在 TM_PASS）=================
+        // 設定存在這台裝置，並同步到雲端的保留帳號「__teacher__」（不用更新 Code.gs）；學生的裝置在開啟、登入、進商店時自動取得
+        const TM_KEY = 'rhythmGame.tm.v21', TM_PASS = '12345678', TM_USER = '__teacher__';
+        const TM_MODES = [['m6', '6 小節（簡單）', '.diff-btn[data-measures="6"]'], ['m12', '12 小節', '.diff-btn[data-measures="12"]'], ['m18', '18 小節', '.diff-btn[data-measures="18"]'], ['m24', '24 小節', '.diff-btn[data-measures="24"]'], ['m30', '30 小節', '.diff-btn[data-measures="30"]'],
+            ['boss', '👹 魔王模式', '#boss-toggle'], ['weekly', '📅 每週挑戰', '#btn-wk-start'], ['songs', '🎼 歌曲模式', '#btn-open-songs'], ['two', '👥 雙人', '.players-btn[data-players="2"]'], ['coop', '🤝 雙人合作', '#btn-coop'], ['practice', '🎯 練習模式', '#btn-open-practice'], ['editor', '✏️ 自訂節奏譜', '#btn-mode-editor']];
+        const TM_CATS = [['medal', '🏅 獎章', () => MEDALS.map(m => ({ k: 'medal:' + m.id, n: m.emoji + ' ' + m.name, o: m }))], ['theme', '🎨 主題', () => THEME_ORDER.map(id => ({ k: 'theme:' + id, n: THEMES[id].icon + ' ' + THEMES[id].label, o: THEMES[id] })).filter(x => TM_BASE[x.k] > 0)],
+            ['fx', '✨ 擊打特效', () => FX_LIST.map(f => ({ k: 'fx:' + f.id, n: f.icon + ' ' + f.name, o: f })).filter(x => TM_BASE[x.k] > 0)], ['ti', '🏷 頭銜', () => TITLES.filter(t => !t.special).map(t => ({ k: 'ti:' + t.id, n: t.name, o: t }))], ['av', '🐱 頭像', () => AVATARS.map(a => ({ k: 'av:' + a.id, n: a.e + ' 頭像', o: a }))]];
+        const TM_BASE = {};   // 原價（沒被老師改過的價格）
+        [['medal', MEDALS], ['fx', FX_LIST], ['ti', TITLES], ['av', AVATARS]].forEach(([c, L]) => L.forEach(x => { TM_BASE[c + ':' + x.id] = x.price; })); Object.keys(THEMES).forEach(id => { TM_BASE['theme:' + id] = THEMES[id].price; });
+        const tmItemOf = k => { const [c, id] = k.split(/:(.*)/); return c === 'medal' ? MEDALS.find(x => x.id === id) : c === 'fx' ? FX_LIST.find(x => x.id === id) : c === 'ti' ? TITLES.find(x => x.id === id) : c === 'av' ? AVATARS.find(x => x.id === id) : c === 'theme' ? THEMES[id] : null; };
+        const tmNew = () => ({ ts: 0, thr: 80, modes: {}, shop: {} });
+        function tmNorm(c) {
+            const o = tmNew(); if (!c || typeof c !== 'object') return o;
+            o.ts = Number(c.ts) || 0; const t = Number(c.thr); o.thr = isFinite(t) ? Math.max(0, Math.min(100, Math.round(t * 10) / 10)) : 80;
+            TM_MODES.forEach(m => { if (c.modes && c.modes[m[0]]) o.modes[m[0]] = 1; });
+            Object.keys(c.shop || {}).forEach(k => { if (!(k in TM_BASE)) return; const v = c.shop[k] || {}, e = {}; if (v.l) e.l = 1; if (v.p != null && isFinite(Number(v.p))) { const pr = Math.max(0, Math.min(999999, Math.round(Number(v.p)))); if (pr !== TM_BASE[k]) e.p = pr; } if (e.l || e.p != null) o.shop[k] = e; });
+            return o;
+        }
+        let TM = tmNew(); try { TM = tmNorm(JSON.parse(localStorage.getItem(TM_KEY) || 'null')); } catch (e) {}
+        const tmPays = pct => !(TM.thr > 0) || Math.round(pct * 10) / 10 >= TM.thr;
+        const tmLocked = k => !!(TM.shop[k] && TM.shop[k].l), tmModeLocked = id => !!TM.modes[id];
+        function tmApply() {
+            Object.keys(TM_BASE).forEach(k => { const it = tmItemOf(k); if (it) it.price = (TM.shop[k] && TM.shop[k].p != null) ? TM.shop[k].p : TM_BASE[k]; });
+            tmMark(); try { renderThemes(); } catch (e) {} try { if (!views.shop.classList.contains('hidden')) renderShop(); } catch (e) {} try { refreshBoss(); } catch (e) {}
+        }
+        function tmMark() { TM_MODES.forEach(([id, , sel]) => document.querySelectorAll(sel).forEach(el => el.classList.toggle('tm-lock', tmModeLocked(id)))); }
+        const tmSaveLocal = () => { try { localStorage.setItem(TM_KEY, JSON.stringify(TM)); } catch (e) {} };
+        let tmLastPull = 0;
+        async function tmPull(force) {
+            if (!cloudOn()) return; const now = Date.now(); if (!force && now - tmLastPull < 60000) return; tmLastPull = now;
+            try { const res = await fetchT(SCRIPT_URL + '?action=get&name=' + encodeURIComponent(TM_USER)), d = await res.json(), c = d && d.ok && d.user && d.user.medals && d.user.medals.cfg; if (c && Number(c.ts) > TM.ts) { TM = tmNorm(c); tmSaveLocal(); tmApply(); } } catch (e) {}
+        }
+        async function tmPush() {
+            if (!cloudOn()) return false;
+            try { const res = await fetchT(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'save', username: TM_USER, totalPoints: 0, lifetime: 0, medals: { cfg: TM } }) }, 15000), d = await res.json(); return !!(d && d.ok); } catch (e) { return false; }
+        }
+        // 擋住被鎖定的模式與商品（在事件最先的捕獲階段攔截，後面的程式完全不會被執行）
+        const tmKeyOf = b => b.classList.contains('shop-buy') ? 'medal:' + b.dataset.medal : b.dataset.fx ? 'fx:' + b.dataset.fx : b.dataset.k ? b.dataset.k + ':' + b.dataset.id : b.classList.contains('tc-btn') ? 'theme:' + b.dataset.id : '';
+        document.addEventListener('click', e => {
+            const t = e.target; if (!t || !t.closest) return;
+            const b = t.closest('.shop-buy, button[data-fx], button[data-k], .tc-btn');
+            if (b && (b.classList.contains('shop-buy') || b.dataset.do === 'buy')) { const k = tmKeyOf(b); if (k && tmLocked(k)) { e.preventDefault(); e.stopImmediatePropagation(); showToast('🔒 老師暫時鎖定了這個商品'); return; } }
+            for (const [id, , sel] of TM_MODES) { if (tmModeLocked(id) && t.closest(sel)) { e.preventDefault(); e.stopImmediatePropagation(); showToast('🔒 老師已鎖定這個模式'); return; } }
+            if (t.closest('#btn-open-quest')) setTimeout(tmMark, 150);
+        }, true);
+        function tmDecorate() { document.querySelectorAll('.shop-buy, button[data-fx][data-do="buy"], button[data-k][data-do="buy"], .tc-btn[data-do="buy"]').forEach(b => { const k = tmKeyOf(b); if (k && tmLocked(k)) { b.disabled = true; b.classList.add('opacity-70'); b.textContent = '🔒 老師鎖定'; } }); }
+        ['renderShop', 'renderFxShop', 'renderIdShop', 'renderThemes'].forEach(n => { const f = window[n]; if (typeof f !== 'function') return; window[n] = function () { const r = f.apply(this, arguments); try { tmDecorate(); } catch (e) {} return r; }; });
+        { const _os = openShop; window.openShop = function () { try { tmPull(); } catch (e) {} return _os.apply(this, arguments); }; }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) tmPull(); });
+        tmApply(); tmPull(true);
+
+        // ---- 老師模式畫面 ----
+        let tmAuth = false, tmDraft = null;
+        function tmOpen() { tmAuth = false; tmDraft = null; $a('tm-body').classList.add('hidden'); $a('tm-body').innerHTML = ''; $a('tm-login').classList.remove('hidden'); $a('tm-pin').value = ''; $a('tm-note').textContent = '輸入老師密碼。'; openM('tm-modal'); setTimeout(() => $a('tm-pin').focus(), 50); }
+        function tmClose() { closeM('tm-modal'); tmAuth = false; tmDraft = null; $a('tm-body').innerHTML = ''; $a('tm-pin').value = ''; }
+        function tmEnter() { if ($a('tm-pin').value.trim() !== TM_PASS) { $a('tm-note').textContent = '密碼不對。'; $a('tm-pin').value = ''; return; } tmAuth = true; tmDraft = JSON.parse(JSON.stringify(TM)); $a('tm-login').classList.add('hidden'); $a('tm-body').classList.remove('hidden'); $a('tm-note').textContent = '改好之後按最下面的「儲存並套用」才會生效。'; tmRender(); }
+        function tmRender() {
+            const D = tmDraft; let h = '';
+            h += '<div class="flex flex-wrap gap-2 mb-3"><button id="tm-dash" type="button" class="bg-sky-100 text-sky-800 font-black px-3 py-2 rounded-xl border-2 border-sky-300 active:scale-95 text-sm">📊 班級儀表板</button><button id="tm-reset-all" type="button" class="bg-slate-100 text-slate-700 font-black px-3 py-2 rounded-xl border-2 border-slate-300 active:scale-95 text-sm">↺ 全部還原預設</button></div>';
+            h += '<div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 mb-3"><div class="font-black mb-1">💰 積分門檻</div><label class="flex flex-wrap items-center gap-2 font-bold text-sm">一場的成績要達到 <input id="tm-thr" type="number" min="0" max="100" step="1" value="' + D.thr + '" class="border-2 border-amber-300 rounded-lg px-2 py-1 font-black text-center bg-white text-slate-800"> % 才給積分<span class="text-xs text-slate-500">（0＝不設門檻；沒達到的那一場，積分、成就與任務獎勵都不給）</span></label></div>';
+            h += '<div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-3 mb-3"><div class="font-black mb-1">🔒 鎖定遊戲模式<span class="text-xs font-bold text-slate-500">　勾選＝學生不能用</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-1">' + TM_MODES.map(m => '<label class="flex items-center gap-2 bg-white rounded-lg border border-rose-200 px-2 py-1 font-bold text-sm"><input type="checkbox" class="w-5 h-5" data-mode="' + m[0] + '"' + (D.modes[m[0]] ? ' checked' : '') + '>' + m[1] + '</label>').join('') + '</div></div>';
+            h += '<div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3 mb-3"><div class="font-black mb-1">🏪 商店：鎖定與改價<span class="text-xs font-bold text-slate-500">　勾選＝學生不能買；價格欄可直接改（灰色數字是原價）</span></div>';
+            TM_CATS.forEach(([c, label, list]) => {
+                h += '<details class="mb-2" ' + (c === 'medal' ? 'open' : '') + '><summary class="font-black cursor-pointer py-1">' + label + '</summary><div class="flex flex-wrap gap-1 my-1"><button type="button" data-cat="' + c + '" data-act="lock" class="bg-white border-2 border-rose-300 text-rose-700 font-black px-2 py-0.5 rounded-lg text-xs active:scale-95">全部鎖定</button><button type="button" data-cat="' + c + '" data-act="unlock" class="bg-white border-2 border-emerald-300 text-emerald-700 font-black px-2 py-0.5 rounded-lg text-xs active:scale-95">全部解鎖</button><button type="button" data-cat="' + c + '" data-act="price" class="bg-white border-2 border-slate-300 text-slate-700 font-black px-2 py-0.5 rounded-lg text-xs active:scale-95">價格還原</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-1">';
+                list().forEach(x => { const e = D.shop[x.k] || {}, base = TM_BASE[x.k]; h += '<div class="flex items-center gap-2 bg-white rounded-lg border border-emerald-200 px-2 py-1 text-sm font-bold"><label class="flex items-center gap-1"><input type="checkbox" class="w-5 h-5" data-lock="' + x.k + '"' + (e.l ? ' checked' : '') + '>🔒</label><span class="flex-1 truncate">' + esc(x.n) + '</span><input type="number" min="0" max="999999" step="10" data-price="' + x.k + '" value="' + (e.p != null ? e.p : base) + '" class="border-2 ' + (e.p != null ? 'border-amber-400' : 'border-slate-200 text-slate-500') + ' rounded-lg px-1 py-0.5 font-black text-right bg-white"><span class="text-xs text-slate-400">原 ' + base.toLocaleString() + '</span></div>'; });
+                h += '</div></details>';
+            });
+            h += '</div><div class="sticky bottom-0 bg-white pt-2"><button id="tm-save" type="button" class="w-full bg-emerald-500 text-white font-black text-lg py-3 rounded-2xl border-b-4 border-emerald-700 active:scale-95">💾 儲存並套用</button><div id="tm-status" class="text-xs font-bold text-slate-500 mt-1 min-h-[1rem]"></div></div>';
+            $a('tm-body').innerHTML = h;
+        }
+        $a('tm-go').addEventListener('click', tmEnter); $a('tm-pin').addEventListener('keydown', e => { if (e.key === 'Enter') tmEnter(); }); $a('tm-close').addEventListener('click', tmClose);
+        $a('tm-body').addEventListener('change', e => {
+            const t = e.target, D = tmDraft; if (!D || !tmAuth) return;
+            if (t.id === 'tm-thr') { const v = Math.max(0, Math.min(100, Math.round((Number(t.value) || 0) * 10) / 10)); D.thr = v; t.value = v; }
+            else if (t.dataset.mode) { if (t.checked) D.modes[t.dataset.mode] = 1; else delete D.modes[t.dataset.mode]; }
+            else if (t.dataset.lock) { const k = t.dataset.lock, e0 = D.shop[k] || (D.shop[k] = {}); if (t.checked) e0.l = 1; else delete e0.l; if (!e0.l && e0.p == null) delete D.shop[k]; }
+            else if (t.dataset.price) { const k = t.dataset.price, v = Math.max(0, Math.min(999999, Math.round(Number(t.value) || 0))), e0 = D.shop[k] || (D.shop[k] = {}); if (v === TM_BASE[k]) delete e0.p; else e0.p = v; if (!e0.l && e0.p == null) delete D.shop[k]; t.value = e0.p != null ? e0.p : TM_BASE[k]; t.className = t.className.replace(/border-(amber-400|slate-200 text-slate-500)/, e0.p != null ? 'border-amber-400' : 'border-slate-200 text-slate-500'); }
+        });
+        $a('tm-body').addEventListener('click', async e => {
+            const D = tmDraft; if (!D || !tmAuth) return; const t = e.target.closest('button'); if (!t) return;
+            if (t.id === 'tm-dash') { tmClose(); openDash(); return; }
+            if (t.id === 'tm-reset-all') { tmDraft = tmNew(); tmRender(); $a('tm-status').textContent = '已還原成預設值，按「儲存並套用」才會生效。'; return; }
+            if (t.dataset.cat) { const cat = TM_CATS.find(c => c[0] === t.dataset.cat); cat[2]().forEach(x => { const e0 = D.shop[x.k] || (D.shop[x.k] = {}); if (t.dataset.act === 'lock') e0.l = 1; else if (t.dataset.act === 'unlock') delete e0.l; else delete e0.p; if (!e0.l && e0.p == null) delete D.shop[x.k]; }); const open = Array.from(document.querySelectorAll('#tm-body details')).map(d => d.open), top = $a('tm-body').scrollTop; tmRender(); document.querySelectorAll('#tm-body details').forEach((d, i) => { d.open = open[i]; }); $a('tm-body').scrollTop = top; return; }
+            if (t.id === 'tm-save') {
+                const st = $a('tm-status'); TM = tmNorm(Object.assign({}, D, { ts: Date.now() })); tmDraft = JSON.parse(JSON.stringify(TM)); tmSaveLocal(); tmApply(); st.textContent = '已套用到這台裝置，正在同步到雲端…';
+                const ok = await tmPush(); st.textContent = ok ? '✅ 已套用，也已同步到雲端：學生的裝置下次開啟、登入或進商店時會自動更新。' : (cloudOn() ? '⚠ 已套用在這台裝置，但雲端同步失敗（網路問題？）。連上網路後再按一次「儲存並套用」。' : '已套用在這台裝置（沒有連上雲端，其他裝置不會跟著變）。');
+            }
+        });
+
         applyTheme(wantedTheme, false);   // 先照上次選的樣子顯示，等登入後再依帳號擁有的主題校正
         currentTheme = 'classic'; updateThemeButton();
         initLogin();
